@@ -14,30 +14,40 @@ Get the appropriate installer for [Node.js](http://nodejs.org/) for your OS on t
 ### MongoDB
 To install [MongoDB](http://docs.mongodb.org) follow this [link](http://www.mongodb.org/downloads) and get a installer or use your package manager again. After the installation create the following directory structure ```data\db``` in the MongoDB installation directory.
 
+#### Windows
 To start MongoDB on __Windows__ just execute the following exe-file (from the commandline to see possible error messages):
 ```
 ~MongoDBDirectory\bin\mongod.exe
 ```
-add the dbpath-parameter to the command when you did not install MongoDB in the default location
+add the dbpath-parameter to the command when you did not install MongoDB in the default location:
 ```
 ~MongoDBDirectory\bin\mongod.exe --dbpath "d:\path\to\data\db"
 
 ```
 When the mongod.exe launch was successfull you should be able execute the mongo.exe to start working with MongoDB.
 
-To start MongoDB on __Ubuntu__ type following on your cli
+### Ubuntu
+To start MongoDB on __Ubuntu__ type following on your cli:
 ```
 sudo service mongod start
 ```
-To start MongoDB on __Mac__ type following on your cli
+
+### Mac
+To start MongoDB on __Mac__ type following on your cli:
 ```
 mongod
 ```
   
-  This guide is just a short summery of the installation process - when you need more details just follow this [link](http://docs.mongodb.org/manual/installation/) and you will find a lot of information for Windows, Mac and Linux.
+### More details on the installation process
+This guide is just a short summery of the installation process - when you need more details just follow this [link](http://docs.mongodb.org/manual/installation/) and you will find a lot of information for Windows, Mac and Linux.
 
+### Security
+
+To enforce security please follow the the steps described [here](http://docs.mongodb.org/manual/security/) because ...
 > __Warning:__
 > MongoDB is designed to be run in trusted environments, and the database does not enable “Secure Mode” by default.
+
+
 
 
 ## Installation
