@@ -60,6 +60,7 @@ These are the basic requirements for this repository to work - if you need more 
 ## Start the app
 After these steps the basic requirements for this application are installed and you can clone this repository and execute
 ```
+npm install
 grunt
 ```
 in the repository directory. You should see the project at ```http://localhost:3000```
