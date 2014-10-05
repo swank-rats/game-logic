@@ -23,7 +23,7 @@ add the dbpath-parameter to the command when you did not install MongoDB in the 
 ~MongoDBDirectory\bin\mongod.exe --dbpath "d:\path\to\data\db"
 
 ```
-When this mongod.exe launch was successfull you should be able execute the mongo.exe to start working with MongoDB.
+When the mongod.exe launch was successfull you should be able execute the mongo.exe to start working with MongoDB.
 
 To start MongoDB on __Ubuntu__ type following on your cli
 ```
@@ -36,7 +36,7 @@ mongod
   
   This guide is just a short summery of the installation process - when you need more details just follow this [link](http://docs.mongodb.org/manual/installation/) and you will find a lot of information for Windows, Mac and Linux.
 
-> __Warning concerning MongoDB:__
+> __Warning:__
 > MongoDB is designed to be run in trusted environments, and the database does not enable “Secure Mode” by default.
 
 
