@@ -46,12 +46,23 @@ This guide is just a short summery of the installation process - when you need m
 To enforce security please follow the the steps described [here](http://docs.mongodb.org/manual/security/) because ...
 > __Warning:__
 > MongoDB is designed to be run in trusted environments, and the database does not enable “Secure Mode” by default.
-
-
-
+ 
 
 ## Installation
+When Node.js and MongoDB are installed we install bower and grunt with following command:
+```
+npm install -g bower grunt-cli
+```
+[Bower](http://bower.io/) is a package manager for Javascript libraries like e.g. jQuery and will help us to get all dependencies with just one command and [Grunt](http://gruntjs.com/) is a taskrunner and will be used to build the files for the application (Javascript / CSS / etc.) and also to run the server. 
 
+These are the basic requirements for this repository to work - if you need more information about the MeanStack take a look at [https://github.com/linnovate/mean](https://github.com/linnovate/mean).
+
+## Start the app
+After these steps the basic requirements for this application are installed and you can clone this repository and execute
+```
+grunt
+```
+in the repository directory. You should see the project at ```http://localhost:3000```
 
 
 
