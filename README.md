@@ -66,5 +66,6 @@ grunt
 in the repository directory. You should see the project at ```http://localhost:3000```
 
 
-
+## IDE integration
+For a very cool integration into Webstorm or Intellij Idea from Jetbrains watch this [tutorial on youtube](https://www.youtube.com/watch?v=JnMvok0Yks8).
 
