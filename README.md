@@ -9,7 +9,7 @@ To get started with the [mean stack](http://mean.io/) we need to install Node.js
 ### Node.js
 Get the appropriate installer for [Node.js](http://nodejs.org/) for your OS on their website or just use your favourite package manager. After the installation you should get something like this when you type ```node --version``` and ```npm --version``` on your commandline:
 
-![commandline node and npm](https://github.com/swank-rats/game-logic/documentation/images/node_npm.png "npm and node version on the cli")
+![commandline node and npm](https://raw.githubusercontent.com/swank-rats/game-logic/master/documentation/images/node_npm.png)
 
 ### MongoDB
 To install [MongoDB](http://docs.mongodb.org) follow this [link](http://www.mongodb.org/downloads) and get a installer or use your package manager again. After the installation create the following directory structure ```data\db``` in the MongoDB installation directory.
