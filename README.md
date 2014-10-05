@@ -69,7 +69,7 @@ in the repository directory. You should see the project at ```http://localhost:3
 ## IDE integration
 For a very cool integration into Webstorm or Intellij IDEA from Jetbrains watch this [tutorial on youtube](https://www.youtube.com/watch?v=JnMvok0Yks8).
 
-In short: 
+__In short:__
 - add mongoose, angular and express Settings > Javascript > Libraries > Download from the "TypeScript community stubs"-list in the dropdown
 - add mongo plugin to explore MongoDB in the IDE
 
