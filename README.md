@@ -36,9 +36,8 @@ mongod
   
   This guide is just a short summery of the installation process - when you need more details just follow this [link](http://docs.mongodb.org/manual/installation/) and you will find a lot of information for Windows, Mac and Linux.
 
-__Warning concerning MongoDB:__
-
-MongoDB is designed to be run in trusted environments, and the database does not enable “Secure Mode” by default.
+> __Warning concerning MongoDB:__
+> MongoDB is designed to be run in trusted environments, and the database does not enable “Secure Mode” by default.
 
 
 ## Installation
