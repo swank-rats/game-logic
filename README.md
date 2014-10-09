@@ -72,4 +72,5 @@ For a very cool integration into Webstorm or Intellij IDEA from Jetbrains watch 
 __In short:__
 - add mongoose, angular and express Settings > Javascript > Libraries > Download from the "TypeScript community stubs"-list in the dropdown
 - add mongo plugin to explore MongoDB in the IDE
+- add a configuration for remote debugging of node.js and enter the host with the port - 5858 in our case
 
