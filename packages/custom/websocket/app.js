@@ -65,10 +65,11 @@ var module = new ModuleFactory('websocket'),
             return;
         }
 
-        var data = JSON.parse(message);
+        var data = JSON.parse(message),
+            cmd = data.cmd || "default";
 
-        if (!!data.to && !!data.cmd && !!listener.hasOwnProperty(data.to) && !!listener[data.to].hasOwnProperty(data.cmd)) {
-            listener[data.to][data.cmd](socket, data.parameter || {}, data.data || {});
+        if (!!data.to && !!listener.hasOwnProperty(data.to)) {
+            listener[data.to][cmd](socket, data.params || {}, data.data || {});
         } else {
             console.warn('message ignored');
         }
@@ -82,7 +83,7 @@ var module = new ModuleFactory('websocket'),
         console.warn('closed: %s', socket.id);
     };
 
-// {"to":"echo", "cmd": "...", "parameter": [], "data": {...} }
+// {"to":"echo", "cmd": "...", "params": [], "data": {...} }
 // listener:
 // {
 //      "<cmd>": function(socket, parameter..., data){
@@ -111,12 +112,8 @@ module.register(function(app, auth, database, http) {
 
     init(http);
 
-    module.listen('echo', {callback: function(socket, data) {
+    module.listen('echo', {default: function(socket, params, data) {
         socket.send(socket.id + ':' + data);
-    }});
-
-    module.listen('hello', {callback: function(socket, cmd, parameter, data) {
-        socket.send('hello: ' + data);
     }});
 
     return module;
