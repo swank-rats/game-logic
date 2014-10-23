@@ -9,6 +9,12 @@ var module = new ModuleFactory('websocket'),
     WebsocketFactory = require('ws').Server,
     server,
 
+    listener = {},
+
+    /**
+     * Generate uuid for client
+     * @returns {string}
+     */
     guid = function() {
         function _p8(s) {
             var p = (Math.random().toString(16) + "000000000").substr(2, 8);
@@ -17,10 +23,18 @@ var module = new ModuleFactory('websocket'),
 
         return _p8() + _p8(true) + _p8(true) + _p8();
     },
+    IsJsonString = function(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    },
 
     /**
      * Initiate websocket server with given http server
-     * @param http
+     * @param {Object} http
      */
     init = function(http) {
         server = new WebsocketFactory({server: http});
@@ -40,14 +54,41 @@ var module = new ModuleFactory('websocket'),
         });
     },
 
+    /**
+     * Parses message and delegate to listener
+     * @param {Object} socket
+     * @param {String} message
+     */
     onMessage = function(socket, message) {
-        console.log('received (%s): %s', socket.id, message);
-        socket.send(message);
+        if (!IsJsonString(message)) {
+            console.error('message validate error');
+            return;
+        }
+
+        var data = JSON.parse(message);
+
+        if (!!data.to && !!data.cmd && !!listener.hasOwnProperty(data.to) && !!listener[data.to].hasOwnProperty(data.cmd)) {
+            listener[data.to][data.cmd](socket, data.parameter || {}, data.data || {});
+        } else {
+            console.warn('message ignored');
+        }
     },
 
+    /**
+     * Handles closed socket
+     * @param {Object} socket
+     */
     onClose = function(socket) {
-        console.log('closed: %s', socket.id);
+        console.warn('closed: %s', socket.id);
     };
+
+// {"to":"echo", "cmd": "...", "parameter": [], "data": {...} }
+// listener:
+// {
+//      "<cmd>": function(socket, parameter..., data){
+//
+//      }
+// }
 
 /*
  * All MEAN packages require registration
@@ -70,5 +111,17 @@ module.register(function(app, auth, database, http) {
 
     init(http);
 
+    module.listen('echo', {callback: function(socket, data) {
+        socket.send(socket.id + ':' + data);
+    }});
+
+    module.listen('hello', {callback: function(socket, cmd, parameter, data) {
+        socket.send('hello: ' + data);
+    }});
+
     return module;
 });
+
+module.listen = function(name, object) {
+    listener[name] = object;
+};
