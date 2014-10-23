@@ -9,7 +9,12 @@ var module = new ModuleFactory('websocket'),
     WebsocketFactory = require('ws').Server,
     server,
 
-    listener = {},
+    /**
+     * Container for caching listener
+     * @type {Object[]}
+     * @private
+     */
+    _listener = {},
 
     /**
      * Generate uuid for client
@@ -23,7 +28,13 @@ var module = new ModuleFactory('websocket'),
 
         return _p8() + _p8(true) + _p8(true) + _p8();
     },
-    IsJsonString = function(str) {
+
+    /**
+     * Validate string against json
+     * @param {string} json
+     * @returns {boolean}
+     */
+    isJsonString = function(json) {
         try {
             JSON.parse(str);
         } catch (e) {
@@ -42,6 +53,10 @@ var module = new ModuleFactory('websocket'),
         server.on('connection', onConnection);
     },
 
+    /**
+     * Handles connection of new socket
+     * @param {Object} socket
+     */
     onConnection = function(socket) {
         socket.id = guid();
 
@@ -55,12 +70,12 @@ var module = new ModuleFactory('websocket'),
     },
 
     /**
-     * Parses message and delegate to listener
+     * Parses message and delegate to _listener
      * @param {Object} socket
      * @param {String} message
      */
     onMessage = function(socket, message) {
-        if (!IsJsonString(message)) {
+        if (!isJsonString(message)) {
             console.error('message validate error');
             return;
         }
@@ -68,8 +83,8 @@ var module = new ModuleFactory('websocket'),
         var data = JSON.parse(message),
             cmd = data.cmd || "default";
 
-        if (!!data.to && !!listener.hasOwnProperty(data.to)) {
-            listener[data.to][cmd](socket, data.params || {}, data.data || {});
+        if (!!data.to && !!_listener.hasOwnProperty(data.to)) {
+            _listener[data.to][cmd](socket, data.params || {}, data.data || {});
         } else {
             console.warn('message ignored');
         }
@@ -119,6 +134,11 @@ module.register(function(app, auth, database, http) {
     return module;
 });
 
-module.listen = function(name, object) {
-    listener[name] = object;
+/**
+ * register _listener for websockets library
+ * @param {String} name
+ * @param {Object} listener
+ */
+module.listen = function(name, listener) {
+    _listener[name] = listener;
 };
