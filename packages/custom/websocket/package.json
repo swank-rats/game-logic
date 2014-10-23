@@ -8,9 +8,10 @@
     "mean": "0.4.0",
     "engines": {
         "node": "0.10.x",
-        "npm": "1.4.x",
-        "engine.io": "*"
+        "npm": "1.4.x"
     },
-    "dependencies": {},
+    "dependencies": {
+        "ws": "*"
+    },
     "license": "MIT"
 }

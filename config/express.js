@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Module dependencies.
+ * ModuleFactory dependencies.
  */
 var mean = require('meanio'),
   compression = require('compression'),
