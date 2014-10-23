@@ -9,7 +9,7 @@
     "engines": {
         "node": "0.10.x",
         "npm": "1.4.x",
-        "ws": "*"
+        "engine.io": "*"
     },
     "dependencies": {},
     "license": "MIT"
