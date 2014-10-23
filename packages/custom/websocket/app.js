@@ -36,7 +36,7 @@ var module = new ModuleFactory('websocket'),
      */
     isJsonString = function(json) {
         try {
-            JSON.parse(str);
+            JSON.parse(json);
         } catch (e) {
             return false;
         }
