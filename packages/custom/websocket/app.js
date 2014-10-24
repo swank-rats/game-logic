@@ -5,130 +5,21 @@
  */
 var ModuleFactory = require('meanio').Module;
 
-var module = new ModuleFactory('websocket'),
-    WebsocketFactory = require('ws').Server,
-    server,
-
-    /**
-     * Container for caching listener
-     * @type {Object[]}
-     * @private
-     */
-    _listener = {},
-
-    /**
-     * Generate uuid for client
-     * @returns {string}
-     */
-    guid = function() {
-        function _p8(s) {
-            var p = (Math.random().toString(16) + "000000000").substr(2, 8);
-            return s ? "-" + p.substr(0, 4) + "-" + p.substr(4, 4) : p;
-        }
-
-        return _p8() + _p8(true) + _p8(true) + _p8();
-    },
-
-    /**
-     * Validate string against json
-     * @param {string} json
-     * @returns {boolean}
-     */
-    isJsonString = function(json) {
-        try {
-            JSON.parse(json);
-        } catch (e) {
-            return false;
-        }
-        return true;
-    },
-
-    /**
-     * Initiate websocket server with given http server
-     * @param {Object} http
-     */
-    init = function(http) {
-        server = new WebsocketFactory({server: http});
-
-        server.on('connection', onConnection);
-    },
-
-    /**
-     * Handles connection of new socket
-     * @param {Object} socket
-     */
-    onConnection = function(socket) {
-        socket.id = guid();
-
-        socket.on('message', function(message) {
-            onMessage(socket, message);
-        });
-
-        socket.on('close', function() {
-            onClose(socket);
-        });
-    },
-
-    /**
-     * Parses message and delegate to _listener
-     * @param {Object} socket
-     * @param {String} message
-     */
-    onMessage = function(socket, message) {
-        if (!isJsonString(message)) {
-            console.error('message validate error');
-            return;
-        }
-
-        var data = JSON.parse(message),
-            cmd = data.cmd || "default";
-
-        if (!!data.to && !!_listener.hasOwnProperty(data.to)) {
-            _listener[data.to][cmd](socket, data.params || {}, data.data || {});
-        } else {
-            console.warn('message ignored');
-        }
-    },
-
-    /**
-     * Handles closed socket
-     * @param {Object} socket
-     */
-    onClose = function(socket) {
-        console.warn('closed: %s', socket.id);
-    };
-
-// {"to":"echo", "cmd": "...", "params": [], "data": {...} }
-// listener:
-// {
-//      "<cmd>": function(socket, parameter..., data){
-//
-//      }
-// }
-
+var Websocket = new ModuleFactory('websocket'),
+    WebsocketServer = require('websocket-wrapper'),
+    websocketSever;
 /*
  * All MEAN packages require registration
  * Dependency injection is used to define required modules
  */
-module.register(function(app, auth, database, http) {
+Websocket.register(function(app, auth, database, http) {
+    websocketSever = new WebsocketServer({server: http});
 
-    //We enable routing. By default the Package Object is passed to the routes
-    module.routes(app, auth, database);
-
-    //We are adding a link to the main menu for all authenticated users
-    module.menus.add({
-        title: 'websocket example page',
-        link: 'websocket example page',
-        roles: ['authenticated'],
-        menu: 'main'
-    });
-
-    module.aggregateAsset('css', 'websocket.css');
-
-    init(http);
-
-    module.listen('echo', {default: function(socket, params, data) {
-        socket.send(socket.id + ':' + data);
+    websocketSever.registerListener('test', {echo: function(socket, params, data) {
+        if (!!params.toUpper) {
+            data = data.toUpperCase();
+        }
+        socket.send(data);
     }});
 
     return module;
@@ -139,6 +30,6 @@ module.register(function(app, auth, database, http) {
  * @param {String} name
  * @param {Object} listener
  */
-module.listen = function(name, listener) {
-    _listener[name] = listener;
+Websocket.registerListener = function(name, listener) {
+    websocketSever.registerListener(name, listener);
 };
