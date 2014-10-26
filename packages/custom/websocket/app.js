@@ -12,8 +12,8 @@ var Websocket = new ModuleFactory('websocket'),
  * All MEAN packages require registration
  * Dependency injection is used to define required modules
  */
-Websocket.register(function(app, auth, database, http) {
-    websocketSever = new WebsocketServer({server: http});
+Websocket.register(function(app, auth, database, https) {
+    websocketSever = new WebsocketServer({server: https});
 
     websocketSever.registerListener('test', {echo: function(socket, params, data) {
         if (!!params.toUpper) {
