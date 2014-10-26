@@ -57,6 +57,13 @@ npm install -g bower grunt-cli
 
 These are the basic requirements for this repository to work - if you need more information about the MeanStack take a look at [https://github.com/linnovate/mean](https://github.com/linnovate/mean).
 
+## Create SSL Certificate
+
+```
+openssl req -newkey rsa:2048 -new -nodes -keyout key.pem -out csr.pem
+openssl x509 -req -days 365 -in csr.pem -signkey key.pem -out server.crt
+```
+
 ## Start the app
 After these steps the basic requirements for this application are installed and you can clone this repository and execute
 ```

@@ -55,6 +55,12 @@ modules/public/
 modules/views/
 /public/build/
 =======
+
 # idea
 *.iml
 /.idea
+
+# ssl
+csr.pem
+key.pem
+server.crt
