@@ -69,7 +69,7 @@ exports.update = function(req, res) {
  * Delete an highscore
  */
 exports.destroy = function(req, res) {
-    var highscore = req.article;
+    var highscore = req.highscore;
 
     highscore.remove(function(err) {
         if (err) {
