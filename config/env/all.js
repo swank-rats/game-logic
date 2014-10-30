@@ -43,5 +43,10 @@ module.exports = {
   },
 
   // The session cookie name
-  sessionName: 'connect.sid'
+  sessionName: 'connect.sid',
+
+  swankRats : {
+    streamServer: '127.0.0.1'
+  }
+
 };

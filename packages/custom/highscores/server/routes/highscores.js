@@ -8,7 +8,5 @@ module.exports = function(Highscores, app) {
     app.route('/highscores').get(highscores.all);
     app.route('/highscores/:highscoreId').get(highscores.show);
 
-    // Finish with setting up the articleId param
     app.param('highscoreId', highscores.highscore);
 };
-

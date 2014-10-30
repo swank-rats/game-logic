@@ -1,15 +1,18 @@
 <section data-ng-controller="ArticlesController" data-ng-init="find()">
+    <div class="container m-bottom-35">
 
-    <h1 class="m-bottom-25">Comments
-        <small>Feel free to leave a <a href="/#!/articles/create">comment</a>!
-        </small>
-    </h1>
-
-    <div class="container">
         <div class="row">
-            <div data-ng-repeat="article in articles" class="col-xs-12 col-sm-4">
-                <span>{{article.created | date:'dd.mm.yyyy'}}</span> |
-                <span>{{article.user.name}}</span>
+            <div class="col-sm-12">
+                <h1 class="m-bottom-25">Comments
+                    <small>Feel free to leave a <a href="/#!/articles/create">comment</a>!
+                    </small>
+                </h1>
+            </div>
+        </div>
+
+        <div class="row">
+            <div data-ng-repeat="article in articles" class="col-sm-12 m-bottom-35">
+
 
                 <h2>
                     {{article.title}}
@@ -23,9 +26,14 @@
                     </span>
                 </h2>
 
+                <div class="m-bottom-20">
+                    <span>{{article.created | date:'dd.mm.yyyy'}}</span> |
+                    <span>{{article.user.name}}</span>
+                </div>
+
                 <div>{{article.content}}</div>
             </div>
         </div>
-    </div>
 
+    </div>
 </section>

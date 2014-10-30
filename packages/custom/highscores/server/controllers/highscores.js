@@ -83,7 +83,7 @@ exports.destroy = function(req, res) {
 };
 
 /**
- * List of Highscores
+ * List of highscore
  */
 exports.all = function(req, res) {
     // population info needs to stay here because findAll in models does not work
