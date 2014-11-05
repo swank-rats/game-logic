@@ -25,8 +25,7 @@ var GameSchema = new Schema({
     },
     winner: {
         type: Schema.ObjectId,
-        ref: 'User',
-        required: false
+        ref: 'User'
     },
     players: [],
     status: {
@@ -49,7 +48,6 @@ GameSchema.statics.load = function(id, cb) {
     this.findOne({
         _id: id
     }).exec(cb);
-
 //    .populate('user', 'username')
 };
 

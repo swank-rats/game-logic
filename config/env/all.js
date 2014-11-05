@@ -46,7 +46,15 @@ module.exports = {
   sessionName: 'connect.sid',
 
   swankRats : {
-    streamServer: '127.0.0.1'
+    streamServer: '127.0.0.1',
+    players: {
+        max: 2,
+        colors: {
+            red: 'red',
+            blue: 'blue',
+            green: 'green'
+        }
+    }
   }
 
 };

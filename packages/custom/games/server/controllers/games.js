@@ -5,7 +5,6 @@
  */
 var mongoose = require('mongoose'),
     Game = mongoose.model('Game'),
-    User = mongoose.model('User'),
     gameStatus = {
         ready: 'ready',
         started: 'started',
@@ -43,8 +42,8 @@ exports.create = function(req, res) {
         status: gameStatus.ready,
         players: [
             {
-                user: req.user,
-                color: req.body.color
+                user: req.body.players.user,
+                color: req.body.players.color || 'black'
             }
         ]
     });
@@ -69,7 +68,7 @@ exports.update = function(req, res) {
     if (!!req.player) {
         if (game.status === gameStatus.ready) {
 
-//            TODO check for unique color and player
+//            TODO check for unique color and player (max from config?)
 
             game.players.push({
                 user: req.player,
@@ -127,57 +126,27 @@ exports.destroy = function(req, res) {
 /**
  * List of games
  */
-exports.all = function(req, res) {
+exports.find = function(req, res) {
 
-//    var game = new Game({
-//        status: gameStatus.ended,
-//        started: Date.now(),
-//        ended: Date.now(),
-//        players: [
-//            {
-//                userId: '54317a258be33a840415bb50',
-//                color: 'red'
-//            },
-//            {
-//                userId: '4317a258be33a840415bb50',
-//                color: 'green'
-//            }
-//        ]
-//    });
-//
-//
-//    game.save(function(err) {
-//        if (err) {
-//            return res.json(500, {
-//                error: 'Cannot update the game'
-//            });
-//        }
-//        res.json(game);
-//
-//    });
-
-//    // population info needs to stay here because findAll in models does not work
-    Game.find().sort('-created').populate('winner', 'username').exec(function(err, games) {
-        if (err) {
-            return res.json(500, {
-                error: 'Cannot list the games'
-            });
-        }
-        res.json(games);
-    });
-};
-
-/**
- * get pending game
- */
-exports.ready = function(req, res) {
-    // population info needs to stay here because findAll in models does not work
-    Game.findOne({'status': gameStatus.ready}).exec(function(err, games) {
-        if (err) {
-            return res.json(500, {
-                error: 'Cannot find ready game!'
-            });
-        }
-        res.json(games);
-    });
+    if (!!req.query && !!req.query.status) {
+        // filter by status
+        Game.find({status: req.query.status}).exec(function(err, games) {
+            if (err) {
+                return res.json(500, {
+                    error: 'Cannot find games with status ' + req.query.status
+                });
+            }
+            res.json(games);
+        });
+    } else {
+        // list all games
+        Game.find().sort('-created').populate('winner', 'username').exec(function(err, games) {
+            if (err) {
+                return res.json(500, {
+                    error: 'Cannot list the games'
+                });
+            }
+            res.json(games);
+        });
+    }
 };

@@ -19,7 +19,7 @@ Games.register(function(app, auth, database) {
   //We are adding a link to the main menu for all authenticated users
   Games.menus.add({
     title: 'Games',
-    link: 'games-show',
+    link: 'games',
     roles: ['authenticated'],
     menu: 'main'
   });

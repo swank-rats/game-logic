@@ -6,7 +6,7 @@ module.exports = function(Games, app, auth) {
 
     // routes
     app.route('/games')
-        .get(auth.requiresLogin, games.all)
+        .get(auth.requiresLogin, games.find)
         .post(auth.requiresLogin, games.create);
 
     app.route('/games/:gameId')
