@@ -8,8 +8,7 @@ var mongoose = require('mongoose'),
     Game = mongoose.model('Game'),
     GameStatus = {
         ready: 'ready',
-        started: 'started',
-        ended: 'ended'
+        full: ''
     },
 
     /**
@@ -98,7 +97,7 @@ exports.show = function(req, res) {
  */
 exports.create = function(req, res) {
 
-    // TODO stop creating game while one is active
+    // TODO do not allow creating game while one is active
 
     var game = new Game({
         status: GameStatus.ready,
@@ -145,19 +144,8 @@ exports.update = function(req, res) {
                 error: 'Game not found!'
             });
         }
-
-
     }.bind(this));
 
-//    var query = Game.where({'_id': req.params.gameId});
-//    query.findOne(function(err, game) {
-//        if (err) {
-//            console.log(err);
-//        }
-//        if (game) {
-//            console.log(game);
-//        }
-//    });
 };
 
 /**

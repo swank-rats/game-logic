@@ -38,6 +38,22 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                 }, this);
 
                 return isRegistered;
+            },
+
+            /**
+             * Removes already chosen color from arry
+             * @param players
+             * @param colors
+             */
+            getAvailableColors = function(players, colors) {
+
+                angular.forEach(players, function(player) {
+                    if (!!colors[player.color]) {
+                        delete colors[player.color];
+                    }
+                }, this);
+
+                return colors;
             };
 
         /*--------------------------------------------------------------------*/
@@ -49,16 +65,34 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
          */
         $scope.init = function() {
 
-            // TODO via config - how?
-            $scope.colors = {
-                green: 'green',
-                red: 'red',
-                blue: 'blue'
-            };
+            // TODO if there is a game and the player registered for it he should be forwarded to the game
 
             findReadyGame().$promise.then(function(response) {
-                $scope.currentGame = !!response[0] ? response[0] : null;
-                // TODO if there is a game and the player registered for it he should be forwarded to the game
+                var currentGame = !!response[0] ? response[0] : null,
+                    status = '',
+                    colors = {
+                        green: 'green',
+                        red: 'red',
+                        blue: 'blue'
+                    };
+
+                // TODO extract into config
+                // joinable match
+                if (!!currentGame && currentGame.players.length < 2) {
+                    colors = getAvailableColors(currentGame.players, colors);
+                    status = 'join';
+                } else if (!currentGame) {
+                    status = 'create';
+                } else {
+                    status = 'full';
+                }
+
+                // TODO via config - how?
+                // TODO limit color selection when player already joined
+                $scope.colors = colors;
+                $scope.currentGame = currentGame;
+                $scope.status = status;
+
             });
         };
 
