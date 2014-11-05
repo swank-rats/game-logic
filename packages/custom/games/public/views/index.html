@@ -3,39 +3,50 @@
 
         <div class="container-fluid m-bottom-5">
             <div class="row">
+
                 <div data-ng-if="currentGame">
                     <h1 class="m-bottom-25">Join an existing game!</h1>
 
                     <p>Choose a color and join the game:</p>
-
-                    <form>
-                        <button data-ng-click="join()">Join game!</button>
-                    </form>
                 </div>
 
                 <div data-ng-if="!currentGame">
                     <h1 class="m-bottom-25">Start a new game!</h1>
 
-                    <form role="form" name="gameForm" class="form-horizontal col-md-6" data-ng-submit="create(gameForm.$valid)">
+                    <p>Choose a color and start a new game:</p>
+                </div>
 
-                        <fieldset>
-                            <div class="form-group col-md-6"  data-ng-class="{ 'has-error' : submitted && gameForm.selectColor.$invalid }">
-                                <label for="selectColor">Select a color:</label>
-                                <select name="selectColor" id="selectColor" class="form-control input-sm" data-ng-class="{ 'has-error' : submitted && gameForm.selectColor.$invalid }" required>
-                                    <option>---</option>
-                                    <option data-ng-repeat="color in colors" value="{{color}}">
-                                        {{color}}
-                                    </option>
-                                </select>
-                            </div>
-                        </fieldset>
+                <form role="form" name="gameForm" class="form-horizontal col-md-6" data-ng-submit="createOrJoinGame(gameForm.$valid)" novalidate>
+                    <fieldset>
+                        <div class="form-group col-md-6" data-ng-class="{ 'has-error' : submitted && gameForm.selectedColor.$invalid }">
+                            <label mean-token="'choose-color'" for="selectedColor">Select a color:</label>
+                            <select name="selectedColor"
+                                    id="selectedColor"
+                                    class="form-control input-sm"
+                                    data-ng-model="selectedColor"
+                                    required>
+                                <option value="">---</option>
+                                <option data-ng-repeat="color in colors" value="{{color}}">
+                                    {{color}}
+                                </option>
+                            </select>
+                        </div>
+                    </fieldset>
 
-                        <div class="form-group col-md-6">
+                    <div class="form-group col-md-6">
+
+                        <div data-ng-if="currentGame">
+                            <input class="btn btn-info" value="Join a game!" type="submit"/>
+                        </div>
+
+                        <div data-ng-if="!currentGame">
                             <input class="btn btn-info" value="Create a new game!" type="submit"/>
                         </div>
-                    </form>
-                </div>
+
+                    </div>
+                </form>
             </div>
+
         </div>
 
     </div>

@@ -1,9 +1,9 @@
-<section data-ng-controller="GamesController" data-ng-init="">
+<section data-ng-controller="GamesController" data-ng-init="initGamesView()">
     <div class="container m-bottom-35">
 
         <div class="container-fluid m-bottom-5">
             <div class="row">
-                <div>
+                <div data-ng-if="valid">
                     <h1 class="m-bottom-25">Enjoy the game!</h1>
                 </div>
 

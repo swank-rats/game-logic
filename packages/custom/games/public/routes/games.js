@@ -3,26 +3,31 @@
 angular.module('mean.games').config(['$stateProvider',
     function($stateProvider) {
 
-        var currentUser;
-
+        /**
+         * Check if the user is connected
+         * @param $q
+         * @param $timeout
+         * @param $http
+         * @param $location
+         * @returns {*}
+         */
         var checkLoggedin = function($q, $timeout, $http, $location) {
-                // Initialize a new promise
-                var deferred = $q.defer();
+            // Initialize a new promise
+            var deferred = $q.defer();
 
-                // Make an AJAX call to check if the user is logged in
-                $http.get('/loggedin').success(function(user) {
-                    // Authenticated
-                    if (user !== '0') {
-                        currentUser = user;
-                        $timeout(deferred.resolve);
-                    } else {
-                        $timeout(deferred.reject);
-                        $location.url('/login');
-                    }
-                });
+            // Make an AJAX call to check if the user is logged in
+            $http.get('/loggedin').success(function(user) {
+                // Authenticated
+                if (user !== '0') {
+                    $timeout(deferred.resolve);
+                } else {
+                    $timeout(deferred.reject);
+                    $location.url('/login');
+                }
+            });
 
-                return deferred.promise;
-            };
+            return deferred.promise;
+        };
 
         $stateProvider.state('games', {
             url: '/games',
@@ -33,7 +38,7 @@ angular.module('mean.games').config(['$stateProvider',
         });
 
         $stateProvider.state('games-view', {
-            url: '/games/view',
+            url: '/games-view',
             templateUrl: 'games/views/view.html',
             resolve: {
                 loggedin: checkLoggedin

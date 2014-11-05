@@ -4,11 +4,70 @@
  * Module dependencies.
  */
 var mongoose = require('mongoose'),
+    Util = require('util'),
     Game = mongoose.model('Game'),
-    gameStatus = {
+    GameStatus = {
         ready: 'ready',
         started: 'started',
         ended: 'ended'
+    },
+
+    /**
+     * Updates the state
+     * @param game
+     * @param status
+     * @param players
+     */
+    updateGame = function(game, status, players) {
+
+        switch (game.status) {
+            case GameStatus.ended:
+                return new Error('A game can not be changed when it is already finished!');
+            case GameStatus.ready:
+
+                // update players
+                if (!!players && Util.isArray(players)) {
+                    // TODO extract max number of players into config
+                    if (!!game.players && game.players.length < 2 && players.length <= 2) {
+                        players.forEach(function(newPlayer) {
+                            var duplicate = false;
+
+                            game.players.forEach(function(player) {
+
+                                if(newPlayer.color === player.color) {
+                                    duplicate = true;
+                                    return false;
+                                }
+
+                                //TODO uncommented for debugging/testing
+//                                if (newPlayer.user._id === player.user._id) {
+//                                    duplicate = true;
+//                                    return false;
+//                                }
+                            }, this);
+
+                            if (!duplicate) {
+                                game.players.push(newPlayer);
+                            }
+                            duplicate = false;
+                        }, this);
+                    } else {
+                        return new Error('Max number of players reached!');
+                    }
+                }
+                // update state
+                if (status === GameStatus.started || status === GameStatus.ended) {
+                    game.status = status;
+                }
+                break;
+            case GameStatus.started:
+                if (status === GameStatus.ended) {
+                    game.status = status;
+                } else {
+                    return new Error('A started game can only get in the finished state!');
+                }
+                break;
+        }
     };
 
 exports.ws = function(req, res) {
@@ -38,8 +97,11 @@ exports.show = function(req, res) {
  * Create a game
  */
 exports.create = function(req, res) {
+
+    // TODO stop creating game while one is active
+
     var game = new Game({
-        status: gameStatus.ready,
+        status: GameStatus.ready,
         players: [
             {
                 user: req.body.players.user,
@@ -62,48 +124,40 @@ exports.create = function(req, res) {
  * Update a game
  */
 exports.update = function(req, res) {
-    var game = Game.find({'_id': req.id});
+    var players = req.body.players || null,
+        status = req.body.status || null;
 
-    // player joined
-    if (!!req.player) {
-        if (game.status === gameStatus.ready) {
+    Game.findOne({'_id': req.params.gameId}, function(err, game) {
 
-//            TODO check for unique color and player (max from config?)
-
-            game.players.push({
-                user: req.player,
-                color: req.color
+        if (!!game) {
+            updateGame(game, status, players);
+            game.save(function(err) {
+                if (err) {
+                    return res.json(500, {
+                        error: 'Cannot update the game'
+                    });
+                }
+                res.json(game);
             });
+
         } else {
             return res.json(500, {
-                error: 'Cannot update the game'
+                error: 'Game not found!'
             });
         }
-        // status change (start, end)
-    } else if (!!req.status) {
-        switch (req.status) {
-            case gameStatus.started:
-                game.status = gameStatus.started;
-                game.started = Date.now;
-                // TODO Start game logic and ws
-                break;
-            case gameStatus.ended:
-                game.status = gameStatus.ended;
-                game.ended = Date.now;
-                // TODO stop game logic and ws
-                break;
-        }
-    }
 
-    game.save(function(err) {
-        if (err) {
-            return res.json(500, {
-                error: 'Cannot update the game'
-            });
-        }
-        res.json(game);
 
-    });
+    }.bind(this));
+
+//    var query = Game.where({'_id': req.params.gameId});
+//    query.findOne(function(err, game) {
+//        if (err) {
+//            console.log(err);
+//        }
+//        if (game) {
+//            console.log(game);
+//        }
+//    });
 };
 
 /**

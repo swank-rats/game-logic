@@ -10,7 +10,8 @@ module.exports = function(Games, app, auth) {
         .post(auth.requiresLogin, games.create);
 
     app.route('/games/:gameId')
-        .get(auth.requiresLogin, games.show);
+        .get(auth.requiresLogin, games.show)
+        .put(auth.requiresLogin, games.update);
 
     app.param('gameId', games.game);
 };
