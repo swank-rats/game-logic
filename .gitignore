@@ -49,11 +49,18 @@ bower_components
 # --------------------
 # App Files
 # --------------------
+data/
 test/coverage/
 modules/public/
 modules/views/
 /public/build/
 =======
+
 # idea
 *.iml
 /.idea
+
+# ssl
+csr.pem
+key.pem
+server.crt

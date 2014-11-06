@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Module dependencies.
+ * ModuleFactory dependencies.
  */
 var should = require('should'),
   mongoose = require('mongoose'),

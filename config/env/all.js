@@ -9,12 +9,12 @@ module.exports = {
     port: process.env.PORT || 3000
   },
   https: {
-    port: false,
+    port: process.env.HTTPS_PORT || 3001,
 
     // Paths to key and cert as string
     ssl: {
-      key: '',
-      cert: ''
+      key: 'key.pem',
+      cert: 'server.crt'
     }
   },
   hostname: process.env.HOST || process.env.HOSTNAME,
@@ -37,7 +37,7 @@ module.exports = {
     // only when SSL-enabled (HTTPS) is used, and otherwise it won't
     // set a cookie. 'true' is recommended yet it requires the above
     // mentioned pre-requisite.
-    secure: false,
+    secure: true,
     // Only set the maxAge to null if the cookie shouldn't be expired
     // at all. The cookie will expunge when the browser is closed.
     maxAge: null
