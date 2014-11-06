@@ -34,14 +34,13 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                         isRegistered = true;
                         return false;
                     }
-                    console.log('players vs users', value, user);
                 }, this);
 
                 return isRegistered;
             },
 
             /**
-             * Removes already chosen color from arry
+             * Removes already chosen color from array
              * @param players
              * @param colors
              */
@@ -54,6 +53,20 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                 }, this);
 
                 return colors;
+            },
+
+            initWebsocket = function(){
+                var connection = new WebSocket('wss://localhost:3001');
+
+                // When the connection is open, send some data to the server
+                connection.onopen = function () {
+                    connection.send(JSON.stringify({to: 'game', cmd: 'echo', params: {toUpper: true}, data: 'testdata'}));
+                };
+
+                // Log messages from the server
+                connection.onmessage = function (e) {
+                    console.log('Server: ' + e.data);
+                };
             };
 
         /*--------------------------------------------------------------------*/
@@ -102,10 +115,10 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
          */
         $scope.createOrJoinGame = function(isValid) {
 
-            // create game
             if (!!isValid && !!this.selectedColor) {
                 var game;
 
+                // create game
                 if (!$scope.currentGame) {
                     game = new Games({
                             players: {
@@ -165,6 +178,8 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                     $location.path('games');
                 }
             });
+
+            initWebsocket();
         };
 
         /*--------------------------------------------------------------------*/

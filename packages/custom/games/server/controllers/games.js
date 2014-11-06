@@ -6,6 +6,7 @@
 var mongoose = require('mongoose'),
     Util = require('util'),
     Game = mongoose.model('Game'),
+//    Websocket = require('Websocket').Module,
     GameStatus = {
         ready: 'ready',
         full: ''
@@ -33,7 +34,7 @@ var mongoose = require('mongoose'),
 
                             game.players.forEach(function(player) {
 
-                                if(newPlayer.color === player.color) {
+                                if (newPlayer.color === player.color) {
                                     duplicate = true;
                                     return false;
                                 }
@@ -69,8 +70,19 @@ var mongoose = require('mongoose'),
         }
     };
 
-exports.ws = function(req, res) {
-    // TODO init for websocket tests
+/**
+ * Returns listeners for websockets
+ * @return {{echo: echo}}
+ */
+exports.getListener = function() {
+    return {
+        echo: function(socket, params, data) {
+            if (!!params.toUpper) {
+                data = data.toUpperCase();
+            }
+            socket.send(data);
+        }
+    };
 };
 
 /**
@@ -83,6 +95,8 @@ exports.game = function(req, res, next, id) {
         req.game = game;
         next();
     });
+
+    exports.getListener();
 };
 
 /**
@@ -124,21 +138,27 @@ exports.create = function(req, res) {
  */
 exports.update = function(req, res) {
     var players = req.body.players || null,
-        status = req.body.status || null;
+        status = req.body.status || null,
+        response;
 
     Game.findOne({'_id': req.params.gameId}, function(err, game) {
 
         if (!!game) {
-            updateGame(game, status, players);
-            game.save(function(err) {
-                if (err) {
-                    return res.json(500, {
-                        error: 'Cannot update the game'
-                    });
-                }
-                res.json(game);
-            });
-
+            response = updateGame(game, status, players);
+            if (!response) {
+                game.save(function(err) {
+                    if (err) {
+                        return res.json(500, {
+                            error: 'Cannot update the game'
+                        });
+                    }
+                    res.json(game);
+                });
+            } else {
+                return res.json(500, {
+                    error: response
+                });
+            }
         } else {
             return res.json(500, {
                 error: 'Game not found!'

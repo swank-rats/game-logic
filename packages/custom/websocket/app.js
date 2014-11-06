@@ -22,7 +22,7 @@ Websocket.register(function(app, auth, database, https) {
         socket.send(data);
     }});
 
-    return module;
+    return Websocket;
 });
 
 /**
