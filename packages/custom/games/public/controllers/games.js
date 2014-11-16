@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('mean.games').controller('GamesController', ['$scope', '$stateParams', '$location', 'Global', 'Games',
-    function($scope, $stateParams, $location, Global, Games) {
+angular.module('mean.games').controller('GamesController', ['$scope', '$stateParams', '$location', 'Global', 'Games', '$rootScope',
+    function($scope, $stateParams, $location, Global, Games, $rootScope) {
         $scope.global = Global;
 
         $scope.hasAuthorization = function(game) {
@@ -45,7 +45,6 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
              * @param colors
              */
             getAvailableColors = function(players, colors) {
-
                 angular.forEach(players, function(player) {
                     if (!!colors[player.color]) {
                         delete colors[player.color];
@@ -55,18 +54,28 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                 return colors;
             },
 
+            /**
+             * Initializes the websocket
+             */
             initWebsocket = function(){
-                var connection = new WebSocket('wss://localhost:3001');
 
-                // When the connection is open, send some data to the server
-                connection.onopen = function () {
-                    connection.send(JSON.stringify({to: 'game', cmd: 'echo', params: {toUpper: true}, data: 'testdata'}));
-                };
+                if(!$rootScope.websocket){
+                    var connection = new WebSocket('wss://localhost:3001');
 
-                // Log messages from the server
-                connection.onmessage = function (e) {
-                    console.log('Server: ' + e.data);
-                };
+                    // When the connection is open, send some data to the server
+                    connection.onopen = function () {
+                        connection.send(JSON.stringify({to: 'game', cmd: 'echo', params: {toUpper: true}, data: 'testdata'}));
+                    };
+
+                    // Log messages from the server
+                    connection.onmessage = function (e) {
+                        console.log('Server: ' + e.data);
+                    };
+
+                    $rootScope.websocket = connection;
+                } else {
+                    $rootScope.websocket.send(JSON.stringify({to: 'game', cmd: 'echo', params: {toUpper: true}, data: 'testdata2'}));
+                }
             };
 
         /*--------------------------------------------------------------------*/

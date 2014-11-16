@@ -3,10 +3,12 @@
 /**
  * Module dependencies.
  */
-var mongoose = require('mongoose'),
+
+var mean = require('meanio'),
+    config = mean.loadConfig(),
+    mongoose = require('mongoose'),
     Util = require('util'),
     Game = mongoose.model('Game'),
-//    Websocket = require('Websocket').Module,
     GameStatus = {
         ready: 'ready',
         full: ''
@@ -96,6 +98,8 @@ exports.game = function(req, res, next, id) {
         next();
     });
 
+    console.log(config);
+
     exports.getListener();
 };
 
@@ -104,6 +108,7 @@ exports.game = function(req, res, next, id) {
  */
 exports.show = function(req, res) {
     res.json(req.game);
+    console.log(config);
 };
 
 /**
