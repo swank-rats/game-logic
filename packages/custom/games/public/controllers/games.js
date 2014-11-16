@@ -202,7 +202,6 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
 
                     response.$promise.then(function(response) {
                         game = !!response[0] ? response[0] : null;
-
                         // when there is a game ready and the user is a player show everything
                         if (!!game && !!game.players && !!isUserRegisteredForGame(game, user)) {
                             $scope.server = $rootScope.config.streamServer;
@@ -217,8 +216,29 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                 function(data, status, headers) {
                     console.error({data: data, status: status, headers: headers});
                 }
-            )
-            ;
+            );
+        };
+
+        /**
+         * Eventlistener for keypresses
+         * @param event
+         */
+        $scope.keyDownAction = function(event){
+            if(!!$rootScope.websocket){
+//                32 37 38 39 40
+                console.log('Down', event.which);
+            }
+        };
+
+        /**
+         * Eventlistener for keypresses
+         * @param event
+         */
+        $scope.keyUpAction = function(event){
+            if(!!$rootScope.websocket){
+//                32 37 38 39 40
+                console.log('Up', event.which);
+            }
         };
 
         /*--------------------------------------------------------------------*/

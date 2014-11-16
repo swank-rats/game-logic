@@ -39,7 +39,7 @@ angular.module('mean.games').config(['$stateProvider',
 
         $stateProvider.state('game-play', {
             url: '/games/:gameId/play',
-            templateUrl: 'games/views/view.html',
+            templateUrl: 'games/views/play.html',
             resolve: {
                 loggedin: checkLoggedin
             }
