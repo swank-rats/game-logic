@@ -1,0 +1,39 @@
+<section data-ng-controller="HighscoresController" data-ng-init="find()">
+    <div class="container m-bottom-35">
+
+
+        <div class="container-fluid m-bottom-5">
+            <div class="row">
+                <h1 class="m-bottom-25">Highscores</h1>
+                <blockquote>
+                    <p>If winning isn't everything, why do they keep score?</p>
+                    <footer>Vince Lombardi</footer>
+                </blockquote>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Score</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-ng-repeat="highscore in highscores">
+                                <td>{{highscore.user.username}}</td>
+                                <td>{{highscore.score}}</td>
+                                <td>{{highscore.changed | date:'dd.mm.yyyy'}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

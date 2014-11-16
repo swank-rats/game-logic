@@ -20,6 +20,7 @@ module.exports = {
   hostname: process.env.HOST || process.env.HOSTNAME,
   db: process.env.MONGOHQ_URL,
   templateEngine: 'swig',
+  debug: true,
 
   // The secret should be set to a non-guessable string that
   // is used to compute a session hash
@@ -43,5 +44,17 @@ module.exports = {
   },
 
   // The session cookie name
-  sessionName: 'connect.sid'
+  sessionName: 'connect.sid',
+
+  swankRats : {
+    streamServer: '127.0.0.1',
+    players: {
+        max: 2,
+        colors: {
+            red: 'red',
+            blue: 'blue',
+            green: 'green'
+        }
+    }
+  }
 };

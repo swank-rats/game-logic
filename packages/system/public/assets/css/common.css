@@ -26,7 +26,7 @@
     margin-top: 70px;
     width: 100%
 }
-footer {
+footer.sitefooter {
 	position: fixed;
 	left: 0;
 	bottom: 0;
@@ -40,9 +40,30 @@ footer {
 footer p {
 	padding: 5px 0 12px 10px
 }
+
+.m-top-5 {margin-top: 5px !important}
+.m-top-10 {margin-top: 10px !important}
+.m-top-15 {margin-top: 15px !important}
+.m-top-20 {margin-top: 20px !important}
+.m-top-25 {margin-top: 25px !important}
+.m-top-30 {margin-top: 30px !important}
+.m-top-35 {margin-top: 35px !important}
+
+.m-bottom-5 {margin-bottom: 5px !important}
+.m-bottom-10 {margin-bottom: 10px !important}
+.m-bottom-15 {margin-bottom: 15px !important}
+.m-bottom-20 {margin-bottom: 20px !important}
+.m-bottom-25 {margin-bottom: 25px !important}
+.m-bottom-30 {margin-bottom: 30px !important}
+.m-bottom-35 {margin-bottom: 35px !important}
+
 /*.ng-invalid.ng-dirty{*/
     /*border-color:#FA787E;*/
 /*}*/
 /*.ng-valid.ng-dirty{*/
     /*border-color:#78FA89;*/
 /*}*/
+
+hr {
+    width: 200px;
+}

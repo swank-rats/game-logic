@@ -25,7 +25,7 @@ angular.module('mean.articles').config(['$stateProvider',
 
     // states for my app
     $stateProvider
-      .state('all articles', {
+      .state('comments-show', {
         url: '/articles',
         templateUrl: 'articles/views/list.html',
         resolve: {
