@@ -20,7 +20,6 @@ module.exports = {
   hostname: process.env.HOST || process.env.HOSTNAME,
   db: process.env.MONGOHQ_URL,
   templateEngine: 'swig',
-  debug: true,
 
   // The secret should be set to a non-guessable string that
   // is used to compute a session hash
@@ -47,13 +46,15 @@ module.exports = {
   sessionName: 'connect.sid',
 
   swankRats : {
-    streamServer: '127.0.0.1',
+    streamServer: 'http://www.terravista-erlebnisreisen.de/tl_files/bilder/ozeanien/landingpage/lake-wanaka-in-neuseeland.jpg',
     players: {
         max: 2,
         colors: {
             red: 'red',
             blue: 'blue',
-            green: 'green'
+            green: 'green',
+            orange: 'orange',
+            yellow: 'yellow'
         }
     }
   }

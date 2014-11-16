@@ -14,4 +14,11 @@ module.exports = function(Games, app, auth) {
         .put(auth.requiresLogin, games.update);
 
     app.param('gameId', games.game);
+
+    app.route('/games-config')
+        .get(auth.requiresLogin, games.config);
+
+    app.route('/games/:gameId/play')
+        .get(auth.requiresLogin, games.play);
+
 };

@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('mean.games').controller('GamesController', ['$scope', '$stateParams', '$location', 'Global', 'Games', '$rootScope',
-    function($scope, $stateParams, $location, Global, Games, $rootScope) {
+angular.module('mean.games').controller('GamesController', ['$scope', '$stateParams', '$location', 'Global', 'Games', '$rootScope', '$http', '$q',
+    function($scope, $stateParams, $location, Global, Games, $rootScope, $http, $q) {
         $scope.global = Global;
 
         $scope.hasAuthorization = function(game) {
@@ -57,18 +57,18 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
             /**
              * Initializes the websocket
              */
-            initWebsocket = function(){
+            initWebsocket = function() {
 
-                if(!$rootScope.websocket){
+                if (!$rootScope.websocket) {
                     var connection = new WebSocket('wss://localhost:3001');
 
                     // When the connection is open, send some data to the server
-                    connection.onopen = function () {
+                    connection.onopen = function() {
                         connection.send(JSON.stringify({to: 'game', cmd: 'echo', params: {toUpper: true}, data: 'testdata'}));
                     };
 
                     // Log messages from the server
-                    connection.onmessage = function (e) {
+                    connection.onmessage = function(e) {
                         console.log('Server: ' + e.data);
                     };
 
@@ -76,6 +76,27 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                 } else {
                     $rootScope.websocket.send(JSON.stringify({to: 'game', cmd: 'echo', params: {toUpper: true}, data: 'testdata2'}));
                 }
+            },
+
+            /**
+             * Fetches the configuration for games and stores it in $rootScope.config
+             * @return Promise
+             */
+            fetchConfiguration = function() {
+                var deferred = $q.defer();
+                if (!$rootScope.config) {
+                    $http.get('/games-config').
+                        success(function(data) {
+                            $rootScope.config = data;
+                            deferred.resolve(data);
+                        }).
+                        error(function(data, status, headers) {
+                            deferred.reject(data, status, headers);
+                        });
+                } else {
+                    deferred.resolve($scope.global.config);
+                }
+                return deferred.promise;
             };
 
         /*--------------------------------------------------------------------*/
@@ -87,35 +108,35 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
          */
         $scope.init = function() {
 
-            // TODO if there is a game and the player registered for it he should be forwarded to the game
+            // fetch configuration and store it in the global scope
+            // afterwards get game
+            fetchConfiguration().then(
+                function() {
 
-            findReadyGame().$promise.then(function(response) {
-                var currentGame = !!response[0] ? response[0] : null,
-                    status = '',
-                    colors = {
-                        green: 'green',
-                        red: 'red',
-                        blue: 'blue'
-                    };
+                    // TODO if there is a game and the player registered for it he should be forwarded to the game
+                    findReadyGame().$promise.then(function(response) {
+                        var currentGame = !!response[0] ? response[0] : null,
+                            status = '',
+                            colors = $rootScope.config.players.colors;
 
-                // TODO extract into config
-                // joinable match
-                if (!!currentGame && currentGame.players.length < 2) {
-                    colors = getAvailableColors(currentGame.players, colors);
-                    status = 'join';
-                } else if (!currentGame) {
-                    status = 'create';
-                } else {
-                    status = 'full';
-                }
+                        // joinable match
+                        if (!!currentGame && currentGame.players.length < $rootScope.config.players.max) {
+                            colors = getAvailableColors(currentGame.players, $rootScope.config.players.colors);
+                            status = 'join';
+                        } else if (!currentGame) {
+                            status = 'create';
+                        } else {
+                            status = 'full';
+                        }
 
-                // TODO via config - how?
-                // TODO limit color selection when player already joined
-                $scope.colors = colors;
-                $scope.currentGame = currentGame;
-                $scope.status = status;
+                        $scope.colors = colors;
+                        $scope.currentGame = currentGame;
+                        $scope.status = status;
 
-            });
+                    });
+                }, function(data, status, headers) {
+                    console.error({data: data, status: status, headers: headers});
+                });
         };
 
         /**
@@ -138,7 +159,7 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
 
                     game.$save(function(Game) {
                         $scope.currentGame = Game;
-                        $location.path('games-view');
+                        $location.path('/games/' + Game._id + '/play');
                     });
 
                     // join game
@@ -151,7 +172,7 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
 
                     game.$update(function(Game) {
                         $scope.currentGame = Game;
-                        $location.path('games-view');
+                        $location.path('/games/' + Game._id + '/play');
                     });
                 }
 
@@ -173,22 +194,31 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
          */
         $scope.initGamesView = function() {
 
-            var response = findReadyGame(),
-                user = $scope.global.user,
-                game;
+            fetchConfiguration().then(
+                function() {
+                    var response = findReadyGame(),
+                        user = $scope.global.user,
+                        game;
 
-            response.$promise.then(function(response) {
-                game = !!response[0] ? response[0] : null;
+                    response.$promise.then(function(response) {
+                        game = !!response[0] ? response[0] : null;
 
-                // when there is a game ready and the user is a player show everything
-                if (!!game && !!game.players && !!isUserRegisteredForGame(game, user)) {
-                    $scope.valid = true;
-                } else {
-                    $location.path('games');
+                        // when there is a game ready and the user is a player show everything
+                        if (!!game && !!game.players && !!isUserRegisteredForGame(game, user)) {
+                            $scope.server = $rootScope.config.streamServer;
+                            initWebsocket();
+                        } else {
+                            // TODO show game without websocket and controlls
+                            $location.path('games');
+                        }
+                    });
+                },
+
+                function(data, status, headers) {
+                    console.error({data: data, status: status, headers: headers});
                 }
-            });
-
-            initWebsocket();
+            )
+            ;
         };
 
         /*--------------------------------------------------------------------*/

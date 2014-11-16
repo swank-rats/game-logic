@@ -98,8 +98,6 @@ exports.game = function(req, res, next, id) {
         next();
     });
 
-    console.log(config);
-
     exports.getListener();
 };
 
@@ -108,7 +106,6 @@ exports.game = function(req, res, next, id) {
  */
 exports.show = function(req, res) {
     res.json(req.game);
-    console.log(config);
 };
 
 /**
@@ -216,4 +213,26 @@ exports.find = function(req, res) {
             res.json(games);
         });
     }
+};
+
+/**
+ * Returns the configuration for a game
+ * @param req
+ * @param res
+ */
+exports.config = function(req, res) {
+    if (!!config.swankRats) {
+        res.json(config.swankRats);
+    } else {
+        res.json('');
+    }
+};
+
+/**
+ *
+ * @param req
+ * @param res
+ */
+exports.play = function(req, res) {
+    console.log(req);
 };
