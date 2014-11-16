@@ -46,7 +46,7 @@ module.exports = {
   sessionName: 'connect.sid',
 
   swankRats : {
-    streamServer: 'http://www.terravista-erlebnisreisen.de/tl_files/bilder/ozeanien/landingpage/lake-wanaka-in-neuseeland.jpg',
+    streamServer: 'https://placehold.it/1024x768',
     players: {
         max: 2,
         colors: {

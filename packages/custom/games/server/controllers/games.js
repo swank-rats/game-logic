@@ -83,6 +83,13 @@ exports.getListener = function() {
                 data = data.toUpperCase();
             }
             socket.send(data);
+        },
+        move: function(socket, params, data) {
+            if (!!params.started) {
+                socket.send('Received start move: '+data);
+            } else {
+                socket.send('Received stop move: '+data);
+            }
         }
     };
 };

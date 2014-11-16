@@ -2,18 +2,18 @@
 
 angular.module('mean.games').controller('GamesController', ['$scope', '$stateParams', '$location', 'Global', 'Games', '$rootScope', '$http', '$q',
     function($scope, $stateParams, $location, Global, Games, $rootScope, $http, $q) {
-        $scope.global = Global;
 
-        $scope.hasAuthorization = function(game) {
-            if (!game || !game.user) return false;
-            return $scope.global.isAdmin || game.user._id === $scope.global.user._id;
-        };
+        var pressedKeys = [],
 
-        /**
-         * Find game with status ready to join
-         * @return object with $promise property
-         */
-        var findReadyGame = function() {
+        /*--------------------------------------------------------------------*/
+        /* Util
+        /*--------------------------------------------------------------------*/
+
+            /**
+             * Find game with status ready to join
+             * @return object with $promise property
+             */
+            findReadyGame = function() {
                 return Games.query({status: 'ready'}, function(response) {
                     return !!response[0] ? response[0] : null;
                 });
@@ -79,6 +79,48 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
             },
 
             /**
+             * Sends a message through the websocket
+             * @param to
+             * @param cmd
+             * @param params
+             * @param data
+             */
+            sendMessage = function(to, cmd, params, data) {
+                if (!!$rootScope.websocket) {
+                    $rootScope.websocket.send(JSON.stringify({to: to, cmd: cmd, params: params, data: data}));
+                } else {
+                    console.error('No websocket found!');
+                }
+            },
+
+            /**
+             * Returns command for key
+             * @param key
+             * @return {string}
+             */
+            getCommandFromKeyEvent = function(key) {
+                switch (key) {
+                    // A
+                    case 65:
+                        return 'left';
+                    // S
+                    case 83:
+                        return 'backwards';
+                    // D
+                    case 68:
+                        return 'right';
+                    // W
+                    case 87:
+                        return 'forward';
+                    // L
+                    case 76:
+                        return 'shoot';
+                    default:
+                        return '';
+                }
+            },
+
+            /**
              * Fetches the configuration for games and stores it in $rootScope.config
              * @return Promise
              */
@@ -100,8 +142,19 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
             };
 
         /*--------------------------------------------------------------------*/
+        /* General
+        /*--------------------------------------------------------------------*/
+
+        $scope.global = Global;
+
+        $scope.hasAuthorization = function(game) {
+            if (!game || !game.user) return false;
+            return $scope.global.isAdmin || game.user._id === $scope.global.user._id;
+        };
+
+        /*--------------------------------------------------------------------*/
         /* Index page related
-         /*--------------------------------------------------------------------*/
+        /*--------------------------------------------------------------------*/
 
         /**
          * Initialzes everything to create or join a game
@@ -187,7 +240,7 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
 
         /*--------------------------------------------------------------------*/
         /* View page related
-         /*--------------------------------------------------------------------*/
+        /*--------------------------------------------------------------------*/
 
         /**
          * Checks if user is registered for current ready game
@@ -223,10 +276,15 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
          * Eventlistener for keypresses
          * @param event
          */
-        $scope.keyDownAction = function(event){
-            if(!!$rootScope.websocket){
-//                32 37 38 39 40
-                console.log('Down', event.which);
+        $scope.keyDownAction = function(event) {
+            if (!!$rootScope.websocket && !!event.which) {
+                var cmd = getCommandFromKeyEvent(event.which);
+
+                // event triggered the first time
+                if (!!cmd && pressedKeys.indexOf(cmd) === -1) {
+                    pressedKeys.push(cmd);
+                    sendMessage('game', 'move',{started: true}, cmd);
+                }
             }
         };
 
@@ -234,10 +292,15 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
          * Eventlistener for keypresses
          * @param event
          */
-        $scope.keyUpAction = function(event){
-            if(!!$rootScope.websocket){
-//                32 37 38 39 40
-                console.log('Up', event.which);
+        $scope.keyUpAction = function(event) {
+            if (!!$rootScope.websocket && !!event.which) {
+                var cmd = getCommandFromKeyEvent(event.which);
+
+                // event triggered the first time
+                if (!!cmd && pressedKeys.indexOf(cmd) > -1) {
+                    pressedKeys.splice(pressedKeys.indexOf(cmd),1);
+                    sendMessage('game', 'move',{started: false}, cmd);
+                }
             }
         };
 
