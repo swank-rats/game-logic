@@ -6,7 +6,7 @@
 var ModuleFactory = require('meanio').Module;
 
 var Websocket = new ModuleFactory('websocket'),
-    WebsocketServer = require('websocket-wrapper'),
+    WebsocketServer = require('websocket-wrapper').WebsocketWrapper,
     websocketSever;
 /*
  * All MEAN packages require registration
@@ -15,7 +15,7 @@ var Websocket = new ModuleFactory('websocket'),
 Websocket.register(function(app, auth, database, https) {
     websocketSever = new WebsocketServer({server: https});
 
-    websocketSever.registerListener('test', {echo: function(socket, params, data) {
+    websocketSever.addListener('test', {echo: function(socket, params, data) {
         if (!!params.toUpper) {
             data = data.toUpperCase();
         }
@@ -31,5 +31,5 @@ Websocket.register(function(app, auth, database, https) {
  * @param {Object} listener
  */
 Websocket.registerListener = function(name, listener) {
-    websocketSever.registerListener(name, listener);
+    websocketSever.addListener(name, listener);
 };
