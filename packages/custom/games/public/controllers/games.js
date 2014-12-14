@@ -40,18 +40,18 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
             },
 
             /**
-             * Removes already chosen color from array
+             * Removes already chosen forms from array
              * @param players
-             * @param colors
+             * @param forms
              */
-            getAvailableColors = function(players, colors) {
+            getAvailableForms = function(players, forms) {
                 angular.forEach(players, function(player) {
-                    if (!!colors[player.color]) {
-                        delete colors[player.color];
+                    if (!!forms[player.form]) {
+                        delete forms[player.form];
                     }
                 }, this);
 
-                return colors;
+                return forms;
             },
 
             /**
@@ -170,11 +170,11 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                     findReadyGame().$promise.then(function(response) {
                         var currentGame = !!response[0] ? response[0] : null,
                             status = '',
-                            colors = $rootScope.config.players.colors;
+                            forms = $rootScope.config.players.forms;
 
                         // joinable match
                         if (!!currentGame && currentGame.players.length < $rootScope.config.players.max) {
-                            colors = getAvailableColors(currentGame.players, $rootScope.config.players.colors);
+                            forms = getAvailableForms(currentGame.players, $rootScope.config.players.forms);
                             status = 'join';
                         } else if (!currentGame) {
                             status = 'create';
@@ -182,7 +182,7 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                             status = 'full';
                         }
 
-                        $scope.colors = colors;
+                        $scope.forms = forms;
                         $scope.currentGame = currentGame;
                         $scope.status = status;
 
@@ -198,14 +198,14 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
          */
         $scope.createOrJoinGame = function(isValid) {
 
-            if (!!isValid && !!this.selectedColor) {
+            if (!!isValid && !!this.selectedForm) {
                 var game;
 
                 // create game
                 if (!$scope.currentGame) {
                     game = new Games({
                             players: {
-                                color: this.selectedColor,
+                                form: this.selectedForm,
                                 user: $scope.global.user
                             }}
                     );
@@ -219,7 +219,7 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                 } else if (!!$scope.currentGame) {
                     game = $scope.currentGame;
                     game.players.push({
-                        color: this.selectedColor,
+                        form: this.selectedForm,
                         user: $scope.global.user
                     });
 

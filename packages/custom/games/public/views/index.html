@@ -19,24 +19,24 @@
                 <div data-ng-if="status === 'create'">
                     <h1 class="m-bottom-25">Start a new game!</h1>
 
-                    <p>Choose a color and start a new game:</p>
+                    <p>Choose a form and start a new game:</p>
                 </div>
 
 
                 <div data-ng-if="status !== 'full'">
                     <form role="form" name="gameForm" class="form-horizontal col-md-6" data-ng-submit="createOrJoinGame(gameForm.$valid)" novalidate>
                         <fieldset>
-                            <div class="form-group col-md-6" data-ng-class="{ 'has-error' : submitted && gameForm.selectedColor.$invalid }">
-                                <label mean-token="'choose-color'" for="selectedColor">Select
-                                    a color:</label>
-                                <select name="selectedColor"
-                                        id="selectedColor"
+                            <div class="form-group col-md-6" data-ng-class="{ 'has-error' : submitted && gameForm.selectedForm.$invalid }">
+                                <label mean-token="'choose-form'" for="selectedForm">Select
+                                    a form:</label>
+                                <select name="selectedForm"
+                                        id="selectedForm"
                                         class="form-control input-sm"
-                                        data-ng-model="selectedColor"
+                                        data-ng-model="selectedForm"
                                         required>
                                     <option value="">---</option>
-                                    <option data-ng-repeat="color in colors" value="{{color}}">
-                                        {{color}}
+                                    <option data-ng-repeat="form in forms" value="{{form}}">
+                                        {{form}}
                                     </option>
                                 </select>
                             </div>

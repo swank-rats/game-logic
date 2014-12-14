@@ -36,7 +36,7 @@ var mean = require('meanio'),
 
                             game.players.forEach(function(player) {
 
-                                if (newPlayer.color === player.color) {
+                                if (newPlayer.form === player.form) {
                                     duplicate = true;
                                     return false;
                                 }
@@ -127,7 +127,7 @@ exports.create = function(req, res) {
         players: [
             {
                 user: req.body.players.user,
-                color: req.body.players.color || 'black'
+                form: req.body.players.fprm || 'pentagon'
             }
         ]
     });

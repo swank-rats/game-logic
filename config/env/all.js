@@ -49,12 +49,9 @@ module.exports = {
     streamServer: 'https://placehold.it/1024x768',
     players: {
         max: 2,
-        colors: {
-            red: 'red',
-            blue: 'blue',
-            green: 'green',
-            orange: 'orange',
-            yellow: 'yellow'
+        forms: {
+            pentagon: 'pentagon',
+            square: 'square'
         }
     }
   }
