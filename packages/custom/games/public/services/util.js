@@ -72,7 +72,7 @@ angular.module('mean.games').service('GamesUtil', [function() {
                         console.log('Server: ' + e.data);
                     };
 
-                    // TODO implement
+                    // TODO implement?
                     //connection.registerListener({
                     //
                     //});

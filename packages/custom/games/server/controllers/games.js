@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-// TODO split code into multiple files
+// TODO split code into multiple files and refactor
 
 var mean = require('meanio'),
     config = mean.loadConfig(),
@@ -145,7 +145,7 @@ exports.getClientListener = function() {
             }
         },
         move: function(socket, params, data) {
-            if (!!params.user) { // TODO  && !!getRobotSocketForUser(params.user)
+            if (!!params.user && CurrentGame.status === GameStatus.ready) { // TODO  && !!getRobotSocketForUser(params.user)
                 if (!!params.started) {
                     // TODO uncomment when connected
                     //getRobotSocketForUser(params.user).send(getMessage('server','move', {started: params.started}, {user: params.user}));
@@ -158,7 +158,7 @@ exports.getClientListener = function() {
             }
         },
         shoot: function(socket, params, data) {
-            if (!!params.user) { // TODO  && !!ImageServerSocket
+            if (!!params.user && CurrentGame.status === GameStatus.ready) { // TODO  && !!ImageServerSocket
                 if (!!params.started) {
                     // TODO uncomment when connected
                     //ImageServerSocket.send(getMessage('server','shoot', {}, {user: params.user}));
@@ -384,6 +384,6 @@ exports.config = function(req, res) {
  * @param res
  */
 exports.play = function(req, res) {
-    // TODO start game
+    updateGame();
     console.log(req);
 };
