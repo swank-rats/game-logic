@@ -59,6 +59,7 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
              */
             initWebsocket = function() {
 
+                // TODO replace with proper initialization
                 if (!$rootScope.websocket) {
                     var connection = new WebSocket('wss://localhost:3001');
 
@@ -283,7 +284,15 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                 // event triggered the first time
                 if (!!cmd && pressedKeys.indexOf(cmd) === -1) {
                     pressedKeys.push(cmd);
-                    sendMessage('game', 'move',{started: true}, cmd);
+                    sendMessage(
+                        'game',
+                        'move',
+                        {
+                            user:$scope.global.user.username,
+                            started: true
+                        },
+                        cmd
+                    );
                 }
             }
         };
@@ -299,7 +308,15 @@ angular.module('mean.games').controller('GamesController', ['$scope', '$statePar
                 // event triggered the first time
                 if (!!cmd && pressedKeys.indexOf(cmd) > -1) {
                     pressedKeys.splice(pressedKeys.indexOf(cmd),1);
-                    sendMessage('game', 'move',{started: false}, cmd);
+                    sendMessage(
+                        'game',
+                        'move',
+                        {
+                            user:$scope.global.user.username,
+                            started: false
+                        },
+                        cmd
+                    );
                 }
             }
         };

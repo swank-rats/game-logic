@@ -86,9 +86,9 @@ exports.getListener = function() {
         },
         move: function(socket, params, data) {
             if (!!params.started) {
-                socket.send('Received start move: '+data);
+                socket.send(params.user+' started action: '+data);
             } else {
-                socket.send('Received stop move: '+data);
+                socket.send(params.user+' stopped action: '+data);
             }
         }
     };
