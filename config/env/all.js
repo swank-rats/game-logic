@@ -46,8 +46,10 @@ module.exports = {
   sessionName: 'connect.sid',
 
   swankRats : {
+    socketServer: 'wss://localhost:3001',
     streamServer: 'https://placehold.it/1024x768',
     players: {
+        lifePoints: 100,
         max: 2,
         forms: {
             pentagon: 'pentagon',

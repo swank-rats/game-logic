@@ -7,7 +7,7 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$sta
 
         /*--------------------------------------------------------------------*/
         /* Index page related
-        /*--------------------------------------------------------------------*/
+         /*--------------------------------------------------------------------*/
 
         /**
          * Initialzes everything to create or join a game
@@ -18,21 +18,30 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$sta
             // afterwards get game
             Util.fetchConfiguration().then(
                 function() {
-
-                    // TODO if there is a game and the player registered for it he should be forwarded to the game
-                    Util.findReadyGame().$promise.then(function(response) {
+                    Util.findCurrentGame().$promise.then(function(response) {
                         var currentGame = !!response[0] ? response[0] : null,
                             status = '',
                             forms = $rootScope.config.players.forms;
 
-                        // joinable match
-                        if (!!currentGame && currentGame.players.length < $rootScope.config.players.max) {
-                            forms = Util.getAvailableForms(currentGame.players, $rootScope.config.players.forms);
-                            status = 'join';
-                        } else if (!currentGame) {
-                            status = 'create';
+                        // match waiting for another player
+                        if (!!currentGame) {
+                            // current player already registered for game
+                            if (!!Util.isUserRegisteredForGame(currentGame, $scope.global.user)) {
+                                Util.initWebsocket(
+                                    $scope.global.user.username,
+                                    Util.getFormForUserInGame($scope.global.user, currentGame),
+                                    $rootScope.config.socketServer
+                                );
+                                $location.path('games/' + currentGame._id + '/play');
+                            } else if (currentGame.players.length < $rootScope.config.players.max) { // current player not registered and space
+                                forms = Util.getAvailableForms(currentGame.players, $rootScope.config.players.forms);
+                                status = 'join';
+                            } else { // current player not registered and no space
+                                // TODO implement watch only mode?
+                                status = 'full';
+                            }
                         } else {
-                            status = 'full';
+                            status = 'create';
                         }
 
                         $scope.forms = forms;

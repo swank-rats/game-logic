@@ -7,11 +7,11 @@ angular.module('mean.games').service('GamesUtil', [function() {
         return {
 
             /**
-             * Find game with status ready to join
+             * Find current game
              * @return object with $promise property
              */
-            findReadyGame: function() {
-                return Games.query({status: 'ready'}, function(response) {
+            findCurrentGame: function() {
+                return Games.query([{status: 'ready'}, {status: 'waiting'}], function(response) {
                     return !!response[0] ? response[0] : null;
                 });
             },
@@ -23,16 +23,15 @@ angular.module('mean.games').service('GamesUtil', [function() {
              * @return {boolean}
              */
             isUserRegisteredForGame: function(game, user) {
-
                 var isRegistered = false;
-
-                angular.forEach(game.players, function(value) {
-                    if (value.user._id === user._id) {
-                        isRegistered = true;
-                        return false;
-                    }
-                }, this);
-
+                if (!!user && !!game && game.players.length > 0) {
+                    angular.forEach(game.players, function(player) {
+                        if (player.user._id === user._id) {
+                            isRegistered = true;
+                            return false;
+                        }
+                    }, this);
+                }
                 return isRegistered;
             },
 
@@ -54,19 +53,17 @@ angular.module('mean.games').service('GamesUtil', [function() {
             /**
              * Initializes the websocket
              */
-            initWebsocket: function() {
-
-                // TODO replace with proper initialization
+            initWebsocket: function(username, form, wssUrl) {
                 if (!$rootScope.websocket) {
-                    var connection = new WebSocket('wss://localhost:3001');
+                    var connection = new WebSocket(wssUrl);
 
                     // When the connection is open, send some data to the server
                     connection.onopen = function() {
                         connection.send(JSON.stringify({
                             to: 'game',
-                            cmd: 'echo',
-                            params: {toUpper: true},
-                            data: 'testdata'
+                            cmd: 'init',
+                            params: {user: username},
+                            data: {form: form}
                         }));
                     };
 
@@ -75,14 +72,12 @@ angular.module('mean.games').service('GamesUtil', [function() {
                         console.log('Server: ' + e.data);
                     };
 
+                    // TODO implement
+                    //connection.registerListener({
+                    //
+                    //});
+
                     $rootScope.websocket = connection;
-                } else {
-                    $rootScope.websocket.send(JSON.stringify({
-                        to: 'game',
-                        cmd: 'echo',
-                        params: {toUpper: true},
-                        data: 'testdata2'
-                    }));
                 }
             },
 
@@ -152,8 +147,26 @@ angular.module('mean.games').service('GamesUtil', [function() {
                     deferred.resolve($scope.global.config);
                 }
                 return deferred.promise;
-            }
+            },
 
+            /**
+             * Returns the form a player choose for a game
+             * @param game
+             * @param user
+             * @return {string}
+             */
+            getFormForUserInGame: function(game, user) {
+                var form = null;
+                if ((!!game && !!game.players && !!user)) {
+                    angular.forEach(game.players, function(player) {
+                        if (player.user._id === user._id) {
+                            form = player.form;
+                            return false;
+                        }
+                    }, this);
+                }
+                return form;
+            }
         };
     };
 }]);
