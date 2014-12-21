@@ -24,16 +24,17 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
                     response.$promise.then(function(response) {
                         game = !!response[0] ? response[0] : null;
                         form = Util.getFormForUserInGame(game, user);
+                        $scope.gameStatus = !!game ? game.status : '';
 
-                        // when there is a game "full"  and the user is a player show everything
+                        // when there is a game "full" and the user is a player of this game show everything
                         if (!!game && !!game.players && !!Util.isUserRegisteredForGame(game, user)) {
                             $scope.server = $rootScope.config.streamServer;
                             Util.initWebsocket(user.username, form, $rootScope.config.socketServer);
-                        } else { // when there is a game rea
+                        } else { // when a game has started
                             // TODO implement watch only mode?
                             $location.path('games');
                         }
-                    });
+                    }.bind(this));
                 },
 
                 function(data, status, headers) {

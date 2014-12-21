@@ -10,7 +10,7 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$sta
          /*--------------------------------------------------------------------*/
 
         /**
-         * Initialzes everything to create or join a game
+         * Initializes everything to create or join a game
          */
         $scope.init = function() {
 
@@ -33,7 +33,7 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$sta
                                     $rootScope.config.socketServer
                                 );
                                 $location.path('games/' + currentGame._id + '/play');
-                            } else if (currentGame.players.length < $rootScope.config.players.max) { // current player not registered and space
+                            } else if (currentGame.players.length < $rootScope.config.players.max) { // current player not registered and enough space
                                 forms = Util.getAvailableForms(currentGame.players, $rootScope.config.players.forms);
                                 status = 'join';
                             } else { // current player not registered and no space
@@ -59,7 +59,7 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$sta
         };
 
         /**
-         * Create a new game
+         * Create a new game or a join an existing one
          * @param isValid
          */
         $scope.createOrJoinGame = function(isValid) {

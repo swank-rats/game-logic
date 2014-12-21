@@ -24,21 +24,86 @@ var mean = require('meanio'),
     CurrentGame = {},
     ClientRobotAssigment = {},
 
-    // TODO just for development
+// TODO just for development
     ImageServerSocket = {
-        send: function(msg){
-            console.log('Image-Server:'+ msg);
+        send: function(msg) {
+            console.log('Image-Server:' + msg);
         }
     },
     RobotsSockets = {
         'pentagon': {
-            send: function(msg){
-                console.log('Pentagon-Robot:'+ msg);
+            send: function(msg) {
+                console.log('Pentagon-Robot:' + msg);
             }
         },
         'square': {
-            send: function(msg){
-                console.log('Square-Robot:'+ msg);
+            send: function(msg) {
+                console.log('Square-Robot:' + msg);
+            }
+        }
+    },
+
+    /**
+     * Merges the new player list with the existing one on the game
+     * @param players
+     * @param game
+     */
+    mergePlayers = function(players, game) {
+        //FIXME could be reducted to one loop
+        players.forEach(function(newPlayer) {
+            var duplicate = false;
+            game.players.forEach(function(player) {
+                if (newPlayer.form === player.form || newPlayer.user._id === player.user._id) {
+                    duplicate = true;
+                    return false;
+                }
+            }, this);
+
+            if (!duplicate) {
+                newPlayer.lifePoints = config.swankRats.players.lifePoints;
+                game.players.push(newPlayer);
+            }
+            duplicate = false;
+        }, this);
+    },
+
+    /**
+     * Sends a message through the websocket
+     * @param to
+     * @param cmd
+     * @param params
+     * @param data
+     */
+    getMessage = function(to, cmd, params, data) {
+        return JSON.stringify({
+            to: to,
+            cmd: cmd,
+            params: params,
+            data: data
+        });
+    },
+
+    /**
+     * Sets a connection between a client and a robot with username and form
+     * @param user
+     * @param form
+     */
+    setRobotSocketForUser = function(user, form) {
+        if (!!RobotsSockets[form]) {
+            ClientRobotAssigment[user] = RobotsSockets[form];
+        } else {
+            throw new Error('Robot with form ' + form + ' not found!');
+        }
+    },
+
+    /**
+     * Sends a message to all clients
+     * @param data
+     */
+    sendMessageToAllClients = function(data) {
+        for (var socket in ClientSockets) {
+            if (ClientSockets.hasOwnProperty(socket)) {
+                ClientSockets[socket].send(JSON.stringify(data));
             }
         }
     },
@@ -77,69 +142,22 @@ var mean = require('meanio'),
             case GameStatus.waiting: // update players
                 if (!!players && Util.isArray(players)) {
                     if (!!game.players && game.players.length < maxPlayers && players.length <= maxPlayers) {
-                        players.forEach(function(newPlayer) {
-                            var duplicate = false;
-
-                            game.players.forEach(function(player) {
-
-                                if (newPlayer.form === player.form) {
-                                    duplicate = true;
-                                    return false;
-                                }
-                                //TODO uncommented for debugging/testing
-//                                if (newPlayer.user._id === player.user._id) {
-//                                    duplicate = true;
-//                                    return false;
-//                                }
-                            }, this);
-
-                            if (!duplicate) {
-                                newPlayer.lifePoints = config.swankRats.players.lifePoints;
-                                game.players.push(newPlayer);
-                            }
-                            duplicate = false;
-                        }, this);
+                        mergePlayers(players, game);
+                        // update state when max number of players is reached
+                        if (game.players.length === maxPlayers) {
+                            game.status = GameStatus.ready;
+                            sendMessageToAllClients({cmd: 'changedStatus', status: 'ready'});
+                        }
                     } else {
                         return new Error('Max number of players reached!');
                     }
                 }
-
-                // update state when max number of players is reached
-                if (game.players.length === maxPlayers) {
-                    game.status = GameStatus.ready;
-                }
                 break;
         }
-    },
-
-    /**
-     * Sends a message through the websocket
-     * @param to
-     * @param cmd
-     * @param params
-     * @param data
-     */
-    getMessage = function(to, cmd, params, data) {
-        return JSON.stringify({
-            to: to,
-            cmd: cmd,
-            params: params,
-            data: data
-        });
-    },
-
-    /**
-     * Sets a connection between a client and a robot with username and form
-     * @param user
-     * @param form
-     */
-    setRobotSocketForUser = function(user, form) {
-        if (!!RobotsSockets[form]) {
-            ClientRobotAssigment[user] = RobotsSockets[form];
-        } else {
-            throw new Error('Robot with form ' + form + ' not found!');
-        }
     };
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 /**
  * Returns websocket listeners for client-websockets
@@ -157,10 +175,20 @@ exports.getClientListener = function() {
         move: function(socket, params) {
             if (!!params.user && CurrentGame.status === GameStatus.started && params.cmd) {
                 if (!!params.started) {
-                    ClientRobotAssigment[params.user].send(getMessage('server','move', {started: params.started}, {user: params.user}));
+                    ClientRobotAssigment[params.user].send(
+                        getMessage(
+                            'server',
+                            'move',
+                            {started: params.started, user: params.user}
+                        ));
                     socket.send(params.user + ' started moving: ' + params.cmd);
                 } else {
-                    ClientRobotAssigment[params.user].send(getMessage('server','move', {started: params.started}, {user: params.user}));
+                    ClientRobotAssigment[params.user].send(
+                        getMessage(
+                            'server',
+                            'move',
+                            {started: params.started, user: params.user}
+                        ));
                     socket.send(params.user + ' stopped moving: ' + params.cmd);
                 }
             }
@@ -168,7 +196,7 @@ exports.getClientListener = function() {
         shoot: function(socket, params) {
             if (!!params.user && CurrentGame.status === GameStatus.started) {
                 if (!!params.started) {
-                    ImageServerSocket.send(getMessage('server','shot', {player: params.user}));
+                    ImageServerSocket.send(getMessage('server', 'shot', {player: params.user}));
                     socket.send(params.user + ' shot!');
                 }
             }
@@ -231,43 +259,8 @@ exports.getRobotListener = function() {
     };
 };
 
-/**
- * Find game by id - uses somehow the show function
- */
-exports.game = function(req, res, next, id) {
-    Game.load(id, function(err, game) {
-            if (err) {
-                return next(err);
-            }
-            req.game = game;
-            next();
-        }
-    );
-};
-
-/**
- * Show an game
- */
-exports.show = function(req, res) {
-    res.json(req.game);
-};
-
-/**
- * Delete an game
- */
-exports.destroy = function(req, res) {
-    var game = req.game;
-
-    game.remove(function(err) {
-        if (err) {
-            return res.json(500, {
-                error: 'Cannot delete the game'
-            });
-        }
-        res.json(game);
-
-    });
-};
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 /**
  *
@@ -305,7 +298,7 @@ exports.update = function(req, res) {
                 return res.json(500, {error: response.message});
             }
         } else {
-            return res.json(500, {error: 'Game not found ('+req.params.gameId+')!'});
+            return res.json(500, {error: 'Game not found (' + req.params.gameId + ')!'});
         }
     }.bind(this));
 };
@@ -395,4 +388,45 @@ exports.find = function(req, res) {
                 res.json(games);
             });
     }
+};
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+
+/**
+ * Find game by id - uses somehow the show function
+ */
+exports.game = function(req, res, next, id) {
+    Game.load(id, function(err, game) {
+            if (err) {
+                return next(err);
+            }
+            req.game = game;
+            next();
+        }
+    );
+};
+
+/**
+ * Show an game
+ */
+exports.show = function(req, res) {
+    res.json(req.game);
+};
+
+/**
+ * Delete an game
+ */
+exports.destroy = function(req, res) {
+    var game = req.game;
+
+    game.remove(function(err) {
+        if (err) {
+            return res.json(500, {
+                error: 'Cannot delete the game'
+            });
+        }
+        res.json(game);
+
+    });
 };

@@ -69,9 +69,19 @@ angular.module('mean.games').service('GamesUtil', [function() {
                         }));
                     };
 
-                    // Log messages from the server
                     connection.onmessage = function(e) {
-                        console.log('Server: ' + e.data);
+                        if (e.data.indexOf('{') > -1) {
+                            var data = JSON.parse(e.data);
+                            if (!!data.cmd) {
+                                switch (data.cmd) {
+                                    case 'changedStatus':
+                                        $scope.gameStatus = data.status;
+                                        break;
+                                }
+                            }
+                        } else {
+                            console.log('Server: ' + e.data);
+                        }
                     };
                 }
             },
