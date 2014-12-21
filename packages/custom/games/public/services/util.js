@@ -76,6 +76,7 @@ angular.module('mean.games').service('GamesUtil', [function() {
                                 switch (data.cmd) {
                                     case 'changedStatus':
                                         $scope.gameStatus = data.status;
+                                        $scope.$emit('statusChanged');
                                         break;
                                 }
                             }

@@ -4,16 +4,24 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
     function($scope, $stateParams, $location, Global, Games, $rootScope, $http, $q, gamesUtil) {
 
         var pressedKeys = [],
-            Util = gamesUtil($rootScope, Games, $http, $q, $scope);
+            Util = gamesUtil($rootScope, Games, $http, $q, $scope),
+
+            bindCustomEvents = function() {
+                $scope.$on('statusChanged', function(){
+                    console.log('status changed!');
+                });
+            };
 
         /*--------------------------------------------------------------------*/
         /* play page related
-        /*--------------------------------------------------------------------*/
+         /*--------------------------------------------------------------------*/
 
         /**
          * Checks if user is registered for current ready game
          */
         $scope.init = function() {
+
+            bindCustomEvents();
 
             Util.fetchConfiguration().then(
                 function() {
