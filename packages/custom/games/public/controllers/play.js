@@ -47,7 +47,7 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
         };
 
         /**
-         * Eventlistener for keypresses
+         * Eventlistener for key-press
          * @param event
          */
         $scope.keyDownAction = function(event) {
@@ -62,16 +62,16 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
                         cmd === 'shoot' ? 'shoot' : 'move',
                         {
                             user: $scope.global.user.username,
-                            started: true
-                        },
-                        cmd
+                            started: true,
+                            cmd: cmd
+                        }
                     );
                 }
             }
         };
 
         /**
-         * Eventlistener for keypresses
+         * Eventlistener for key-release
          * @param event
          */
         $scope.keyUpAction = function(event) {
@@ -87,12 +87,10 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
                         {
                             user: $scope.global.user.username,
                             started: false
-                        },
-                        cmd
+                        }
                     );
                 }
             }
         };
-
     }
 ]);

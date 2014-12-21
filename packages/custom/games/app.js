@@ -18,7 +18,7 @@ Games.register(function(app, auth, database, websocket) {
     Games.routes(app, auth, database);
 
     websocket.registerListener('game', GamesController.getClientListener());
-    websocket.registerListener('server', GamesController.getServerListener());
+    websocket.registerListener('server', GamesController.getImageServerListener());
     websocket.registerListener('robot', GamesController.getRobotListener());
 
     //We are adding a link to the main menu for all authenticated users

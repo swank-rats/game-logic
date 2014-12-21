@@ -20,11 +20,28 @@ var mean = require('meanio'),
         waiting: 'waiting'      // one player created a game and is waiting for the second
     },
 
-    ImageServerSocket = {},
-    RobotsSockets = {},
     ClientSockets = {},
     CurrentGame = {},
-    RobotClientAssigment = [],
+    ClientRobotAssigment = {},
+
+    // TODO just for development
+    ImageServerSocket = {
+        send: function(msg){
+            console.log('Image-Server:'+ msg);
+        }
+    },
+    RobotsSockets = {
+        'pentagon': {
+            send: function(msg){
+                console.log('Pentagon-Robot:'+ msg);
+            }
+        },
+        'square': {
+            send: function(msg){
+                console.log('Square-Robot:'+ msg);
+            }
+        }
+    },
 
     /**
      * Updates the state
@@ -42,6 +59,8 @@ var mean = require('meanio'),
                     game.status = status;
                     CurrentGame = null;
                     // TODO calculate highscore etc
+                    // image server
+                    //cmd: stop (mehr nicht, von dir, zu mir)
                 } else {
                     return new Error('A started game can only get in the finished state!');
                 }
@@ -52,6 +71,8 @@ var mean = require('meanio'),
                     game.status = GameStatus.started;
                     CurrentGame = game;
                 }
+                // image server
+                // cmd: start (mehr nicht, von dir, zu mir)
                 break;
             case GameStatus.waiting: // update players
                 if (!!players && Util.isArray(players)) {
@@ -108,65 +129,47 @@ var mean = require('meanio'),
     },
 
     /**
-     * Sets a connection between a robot and client
+     * Sets a connection between a client and a robot with username and form
      * @param user
      * @param form
      */
     setRobotSocketForUser = function(user, form) {
-        RobotClientAssigment[user] = form;
+        if (!!RobotsSockets[form]) {
+            ClientRobotAssigment[user] = RobotsSockets[form];
+        } else {
+            throw new Error('Robot with form ' + form + ' not found!');
+        }
     };
 
-// TODO uncomment when implemented
-///**
-// * Retrieves a robot for a client
-// * @param user
-// * @return {*}
-// */
-//getRobotSocketForUser = function(user) {
-//    if (!!RobotClientAssigment[user]) {
-//        var form = RobotClientAssigment[user];
-//        return RobotsSockets[form];
-//    }
-//    return null;
-//
-//};
-
 /**
- * Returns listeners for clients
- * @return {}
+ * Returns websocket listeners for client-websockets
+ * @return {*}
  */
 exports.getClientListener = function() {
     return {
-        init: function(socket, params, data) {
-            if (!!params.user) { // TODO && !!RobotsSockets[data.form]
+        init: function(socket, params) {
+            if (!!params.user) {
                 ClientSockets[params.user] = socket;
-                setRobotSocketForUser(params.user, data.form);
+                setRobotSocketForUser(params.user, params.form);
                 socket.send(params.user + ' initialized the websocket connection!');
             }
         },
-        move: function(socket, params, data) {
-            if (!!params.user && CurrentGame.status === GameStatus.ready) { // TODO  && !!getRobotSocketForUser(params.user)
+        move: function(socket, params) {
+            if (!!params.user && CurrentGame.status === GameStatus.started && params.cmd) {
                 if (!!params.started) {
-                    // TODO uncomment when connected
-                    //getRobotSocketForUser(params.user).send(getMessage('server','move', {started: params.started}, {user: params.user}));
-                    socket.send(params.user + ' started moving: ' + data);
+                    ClientRobotAssigment[params.user].send(getMessage('server','move', {started: params.started}, {user: params.user}));
+                    socket.send(params.user + ' started moving: ' + params.cmd);
                 } else {
-                    // TODO uncomment when connected
-                    //getRobotSocketForUser(params.user).send(getMessage('server','move', {started: params.started}, {user: params.user}));
-                    socket.send(params.user + ' stopped moving: ' + data);
+                    ClientRobotAssigment[params.user].send(getMessage('server','move', {started: params.started}, {user: params.user}));
+                    socket.send(params.user + ' stopped moving: ' + params.cmd);
                 }
             }
         },
-        shoot: function(socket, params, data) {
-            if (!!params.user && CurrentGame.status === GameStatus.ready) { // TODO  && !!ImageServerSocket
+        shoot: function(socket, params) {
+            if (!!params.user && CurrentGame.status === GameStatus.started) {
                 if (!!params.started) {
-                    // TODO uncomment when connected
-                    //ImageServerSocket.send(getMessage('server','shoot', {}, {user: params.user}));
-                    socket.send(params.user + ' started shooting: ' + data);
-                } else {
-                    // TODO relevant use case?
-                    //ImageServerSocket.send(getMessage('server','shoot', {}, {user: params.user}));
-                    socket.send(params.user + ' stopped shooting: ' + data);
+                    ImageServerSocket.send(getMessage('server','shot', {player: params.user}));
+                    socket.send(params.user + ' shot!');
                 }
             }
         }
@@ -177,14 +180,14 @@ exports.getClientListener = function() {
  * Returns listeners for image server
  * @return {}
  */
-exports.getServerListener = function() {
+exports.getImageServerListener = function() {
     return {
         init: function(socket) {
             ImageServerSocket = socket;
             socket.send('Imageserver established the websocket connection!');
         },
-        hit: function(socket, params, data) {
-            if (!!params.user && !!data.points && data.points > 0) {
+        hit: function(socket, params) {
+            if (!!params.player && !!params.precision && params.points > 0) {
                 // TODO
                 // adjust livepoints of player
                 // pass to client and show changes
@@ -194,7 +197,7 @@ exports.getServerListener = function() {
                     'game',
                     'hit',
                     params,
-                    data.points
+                    params.precision
                 ));
 
                 // TODO
@@ -207,9 +210,9 @@ exports.getServerListener = function() {
                 //}.bind(this));
                 //RobotsSockets = {};
                 //ClientSockets = {};
-                //RobotClientAssigment = [];
+                //ClientRobotAssigment = [];
             } else {
-                return new Error('server hit listener: user not set or points invalid (' + data.points + ')!');
+                throw new Error('server hit listener: user not set or points invalid (' + params.precision + ')!');
             }
         }
     };
@@ -236,10 +239,6 @@ exports.game = function(req, res, next, id) {
             if (err) {
                 return next(err);
             }
-            if (!game) {
-                return next(new Error('Failed to load game ' + id));
-            }
-
             req.game = game;
             next();
         }
@@ -251,73 +250,6 @@ exports.game = function(req, res, next, id) {
  */
 exports.show = function(req, res) {
     res.json(req.game);
-};
-
-/**
- * Create a game in the waiting status
- */
-exports.create = function(req, res) {
-
-    // TODO do not allow creating game while one is still active
-    var game = new Game({
-        status: GameStatus.waiting,
-        players: [
-            {
-                user: req.body.players.user,
-                form: req.body.players.form,
-                lifePoints: config.swankRats.players.lifePoints
-            }
-        ]
-    });
-
-    // reset sockets
-    ImageServerSocket = {};
-    RobotsSockets = {};
-    ClientSockets = {};
-    CurrentGame = {};
-    RobotClientAssigment = [];
-
-    game.save(function(err) {
-        if (err) {
-            return res.json(500, {
-                error: 'Cannot save the game'
-            });
-        }
-        res.json(game);
-    });
-};
-
-/**
- * Update a game
- */
-exports.update = function(req, res) {
-    var players = req.body.players || null,
-        response;
-
-    Game.findOne({'_id': req.params.gameId}, function(err, game) {
-
-        if (!!game) {
-            response = updateGame(game, players, config.swankRats.players.max);
-            if (!response) {
-                game.save(function(err) {
-                    if (err) {
-                        return res.json(500, {
-                            error: 'Cannot update the game'
-                        });
-                    }
-                    res.json(game);
-                });
-            } else {
-                return res.json(500, {
-                    error: response
-                });
-            }
-        } else {
-            return res.json(500, {
-                error: 'Game not found!'
-            });
-        }
-    }.bind(this));
 };
 
 /**
@@ -338,47 +270,6 @@ exports.destroy = function(req, res) {
 };
 
 /**
- * Lists of games from newest to oldest or
- * filters according to given status params
- */
-exports.find = function(req, res) {
-    if (!!req.query && !!req.query.status) {
-        // filter by status
-        Game.find({$or: req.query.status}).exec(function(err, games) {
-            if (err) {
-                return res.json(500, {
-                    error: 'Cannot find games with status ' + req.query.status
-                });
-            }
-            res.json(games);
-        });
-    } else {
-        // list all games
-        Game.find().sort('-created').populate('winner', 'username').exec(function(err, games) {
-            if (err) {
-                return res.json(500, {
-                    error: 'Cannot list the games'
-                });
-            }
-            res.json(games);
-        });
-    }
-};
-
-/**
- * Returns the configuration for a game
- * @param req
- * @param res
- */
-exports.config = function(req, res) {
-    if (!!config.swankRats) {
-        res.json(config.swankRats);
-    } else {
-        res.json('No config for swank rats found!');
-    }
-};
-
-/**
  *
  * @param req
  * @param res
@@ -386,4 +277,122 @@ exports.config = function(req, res) {
 exports.play = function(req, res) {
     updateGame();
     console.log(req);
+};
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+
+/**
+ * Updates an existing game with new players
+ * @param req
+ * @param res
+ */
+exports.update = function(req, res) {
+    var players = req.body.players || null,
+        response;
+
+    Game.findOne({'_id': req.params.gameId}, function(err, game) {
+        if (!!game) {
+            response = updateGame(game, players, config.swankRats.players.max);
+            if (!(response instanceof Error)) {
+                game.save(function(err) {
+                    if (err) {
+                        return res.json(500, {error: 'Game could not be updated!'});
+                    }
+                    res.json(game);
+                });
+            } else {
+                return res.json(500, {error: response.message});
+            }
+        } else {
+            return res.json(500, {error: 'Game not found ('+req.params.gameId+')!'});
+        }
+    }.bind(this));
+};
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+
+/**
+ * Creates a game with the waiting status, resets the client sockets as well as
+ * the robot-client-assignment and sets the new current game
+ * @param req
+ * @param res
+ */
+exports.create = function(req, res) {
+    var game = new Game({
+        status: GameStatus.waiting,
+        players: [
+            {
+                user: req.body.players.user,
+                form: req.body.players.form,
+                lifePoints: config.swankRats.players.lifePoints
+            }
+        ]
+    });
+
+    ClientSockets = {};
+    ClientRobotAssigment = [];
+
+    game.save(function(err) {
+        if (err) {
+            return res.json(500, {
+                error: 'Cannot save the game'
+            });
+        }
+        res.json(game);
+        CurrentGame = game;
+    });
+};
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+
+/**
+ * Returns the configuration for the swank rats game
+ * See /config/env/all.js
+ * @param req
+ * @param res
+ */
+exports.config = function(req, res) {
+    if (!!config.swankRats) {
+        res.json(config.swankRats);
+    } else {
+        res.json(500, {error: 'No config for swank rats found!'});
+    }
+};
+
+/**
+ * Returns a list of the latest 100 games sorted from newest to oldest or
+ * filters according to given status params
+ * @param req
+ * @param res
+ */
+exports.find = function(req, res) {
+    if (!!req.query && !!req.query.status) {
+        // filter by status
+        Game.find({$or: req.query.status}).exec(function(err, games) {
+            if (err) {
+                return res.json(500, {
+                    error: 'Cannot find games with the given status!',
+                    params: req.query.status
+                });
+            }
+            res.json(games);
+        });
+    } else {
+        // list all games
+        Game.find()
+            .sort('-created')
+            .populate('winner', 'username')
+            .limit(100)
+            .exec(function(err, games) {
+                if (err) {
+                    return res.json(500, {
+                        error: 'Cannot list the games'
+                    });
+                }
+                res.json(games);
+            });
+    }
 };

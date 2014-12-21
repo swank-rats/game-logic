@@ -56,14 +56,16 @@ angular.module('mean.games').service('GamesUtil', [function() {
             initWebsocket: function(username, form, wssUrl) {
                 if (!$rootScope.websocket) {
                     var connection = new WebSocket(wssUrl);
+                    $rootScope.websocket = connection;
 
-                    // When the connection is open, send some data to the server
                     connection.onopen = function() {
                         connection.send(JSON.stringify({
                             to: 'game',
                             cmd: 'init',
-                            params: {user: username},
-                            data: {form: form}
+                            params: {
+                                user: username,
+                                form: form
+                            }
                         }));
                     };
 
@@ -71,13 +73,6 @@ angular.module('mean.games').service('GamesUtil', [function() {
                     connection.onmessage = function(e) {
                         console.log('Server: ' + e.data);
                     };
-
-                    // TODO implement?
-                    //connection.registerListener({
-                    //
-                    //});
-
-                    $rootScope.websocket = connection;
                 }
             },
 
@@ -86,15 +81,13 @@ angular.module('mean.games').service('GamesUtil', [function() {
              * @param to
              * @param cmd
              * @param params
-             * @param data
              */
-            sendMessage: function(to, cmd, params, data) {
+            sendMessage: function(to, cmd, params) {
                 if (!!$rootScope.websocket) {
                     $rootScope.websocket.send(JSON.stringify({
                         to: to,
                         cmd: cmd,
-                        params: params,
-                        data: data
+                        params: params
                     }));
                 } else {
                     console.error('No websocket found!');
