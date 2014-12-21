@@ -5,6 +5,8 @@
  */
 
 // TODO split code into multiple files and refactor
+// TODO add play button
+// TODO check reset of values after game
 
 var mean = require('meanio'),
     config = mean.loadConfig(),
@@ -12,13 +14,12 @@ var mean = require('meanio'),
     Util = require('util'),
     Game = mongoose.model('Game'),
     GameStatus = {
-        ended: 'ended',
-        started: 'started',
-        ready: 'ready',
-        waiting: 'waiting'
+        ended: 'ended',         // game is finished
+        started: 'started',     // game has started
+        ready: 'ready',         // both players joined the game
+        waiting: 'waiting'      // one player created a game and is waiting for the second
     },
 
-// TODO check reset of values after game
     ImageServerSocket = {},
     RobotsSockets = {},
     ClientSockets = {},
@@ -28,7 +29,6 @@ var mean = require('meanio'),
     /**
      * Updates the state
      * @param game
-     * @param status
      * @param players
      * @param maxPlayers
      */
@@ -254,7 +254,7 @@ exports.show = function(req, res) {
 };
 
 /**
- * Create a game
+ * Create a game in the waiting status
  */
 exports.create = function(req, res) {
 
@@ -274,7 +274,7 @@ exports.create = function(req, res) {
     ImageServerSocket = {};
     RobotsSockets = {};
     ClientSockets = {};
-    CurrentGame = null;
+    CurrentGame = {};
     RobotClientAssigment = [];
 
     game.save(function(err) {
@@ -338,13 +338,13 @@ exports.destroy = function(req, res) {
 };
 
 /**
- * List of games
+ * Lists of games from newest to oldest or
+ * filters according to given status params
  */
 exports.find = function(req, res) {
-
     if (!!req.query && !!req.query.status) {
         // filter by status
-        Game.find({status: req.query.status}).exec(function(err, games) {
+        Game.find({$or: req.query.status}).exec(function(err, games) {
             if (err) {
                 return res.json(500, {
                     error: 'Cannot find games with status ' + req.query.status

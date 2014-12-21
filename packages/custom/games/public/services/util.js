@@ -11,7 +11,7 @@ angular.module('mean.games').service('GamesUtil', [function() {
              * @return object with $promise property
              */
             findCurrentGame: function() {
-                return Games.query([{status: 'ready'}, {status: 'waiting'}], function(response) {
+                return Games.query({status: [{status: 'ready'}, {status: 'waiting'}]}, function(response) {
                     return !!response[0] ? response[0] : null;
                 });
             },

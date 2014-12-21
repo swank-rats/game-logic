@@ -4,7 +4,14 @@
         <div class="container-fluid m-bottom-25">
             <div class="row">
                 <div class="col-md-12" data-ng-keydown="keyDownAction($event)"  data-ng-keyup="keyUpAction($event)" tabindex="-1">
-                    <img class="img-responsive" src="{{server}}"/>
+                    <div id="waitingTxt" class="">
+                        <h1>Waiting...</h1>
+                        <p>for another player to join the game!</p>
+                    </div>
+                    <div class="hidden" id="startBtn">
+                        <input class="btn btn-info" value="Join a game!" type="submit"/>
+                    </div>
+                    <img id="streamImg" class="img-responsive hidden" src="{{server}}"/>
                 </div>
             </div>
         </div>
