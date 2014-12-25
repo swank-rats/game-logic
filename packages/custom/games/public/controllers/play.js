@@ -7,9 +7,14 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
             Util = gamesUtil($rootScope, Games, $http, $q, $scope),
 
             bindCustomEvents = function() {
-                $scope.$on('statusChanged', function(){
-                    console.log('status changed!');
-                });
+
+                // status of a game changes and different html has to be shown
+                $scope.$on('statusChanged', function(event, data){
+                    console.log('gamestate: '+ $scope.game.status);
+                    $scope.game.status = data.status;
+                    $scope.$apply();
+                    console.log('gamestate: '+ $scope.game.status);
+                }.bind(this));
             };
 
         /*--------------------------------------------------------------------*/
@@ -21,6 +26,10 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
          */
         $scope.init = function() {
 
+            $scope.game = {};
+            $scope.config = {
+                server: ''
+            };
             bindCustomEvents();
 
             Util.fetchConfiguration().then(
@@ -32,11 +41,11 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
                     response.$promise.then(function(response) {
                         game = !!response[0] ? response[0] : null;
                         form = Util.getFormForUserInGame(game, user);
-                        $scope.gameStatus = !!game ? game.status : '';
+                        $scope.game = game;
 
                         // when there is a game "full" and the user is a player of this game show everything
                         if (!!game && !!game.players && !!Util.isUserRegisteredForGame(game, user)) {
-                            $scope.server = $rootScope.config.streamServer;
+                            $scope.config.server = $rootScope.config.streamServer;
                             Util.initWebsocket(user.username, form, $rootScope.config.socketServer);
                         } else { // when a game has started
                             // TODO implement watch only mode?

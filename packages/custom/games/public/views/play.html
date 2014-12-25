@@ -4,16 +4,16 @@
         <div class="container-fluid m-bottom-25">
             <div class="row">
                 <div class="col-md-12">
-                    <div id="waiting" class="" data-ng-show="gameStatus === 'waiting'"  data-ng-model="gameStatus">
+                    <div id="waiting" class="" data-ng-show="game.status === 'waiting'"  data-ng-model="gameStatus">
                         <h1 class="text-center">Waiting...</h1>
                         <p class="text-center">for another player to join the game!</p>
                     </div>
-                    <div id="start" data-ng-show="gameStatus === 'ready'"  data-ng-model="gameStatus">
+                    <div id="start" data-ng-show="game.status === 'ready'"  data-ng-model="gameStatus">
                         <h1 class="text-center">Start the game!</h1>
                         <input class="btn btn-info btn-lg center-block" value="Start!" type="submit"/>
                     </div>
-                    <div id="stream" data-ng-show="gameStatus === 'started'" data-ng-keydown="keyDownAction($event)" data-ng-keyup="keyUpAction($event)" tabindex="-1"  data-ng-model="gameStatus">
-                        <img class="img-responsive hidden" src="{{server}}" data-ng-model="server"/>
+                    <div id="stream" data-ng-show="game.status === 'started'" data-ng-keydown="keyDownAction($event)" data-ng-keyup="keyUpAction($event)" tabindex="-1"  data-ng-model="gameStatus">
+                        <img class="img-responsive hidden" src="{{config.server}}" data-ng-model="server"/>
                     </div>
                 </div>
             </div>
