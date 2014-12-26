@@ -74,7 +74,7 @@ var mean = require('meanio'),
      * @param params
      * @param data
      */
-    getMessage = function(to, cmd, params, data) {
+    getJSONMessage = function(to, cmd, params, data) {
         return JSON.stringify({
             to: to,
             cmd: cmd,
@@ -97,14 +97,56 @@ var mean = require('meanio'),
     },
 
     /**
-     * Sends a message to all clients
+     * Sends a custom message to all clients
      * @param data
      */
     sendMessageToAllClients = function(data) {
-        for (var socket in ClientSockets) {
-            if (ClientSockets.hasOwnProperty(socket)) {
-                ClientSockets[socket].send(JSON.stringify(data));
+        if (!!ClientSockets) {
+            var message = JSON.stringify(data);
+            for (var socket in ClientSockets) {
+                if (ClientSockets.hasOwnProperty(socket)) {
+                    ClientSockets[socket].send(message);
+                }
             }
+        }
+    },
+
+    /**
+     * Sends a message to all robots
+     * @param to
+     * @param cmd
+     * @param params
+     * @param data
+     */
+    sendMessageToAllRobots = function(to, cmd, params, data){
+        if (!!RobotsSockets) {
+            params = !!params ? params : {};
+            data = !!data ? data : {};
+
+            var message = getJSONMessage(to, cmd, params, data);
+
+            for (var socket in RobotsSockets) {
+                if (RobotsSockets.hasOwnProperty(socket)) {
+                    RobotsSockets[socket].send(message);
+                }
+            }
+        }
+    },
+
+    /**
+     * Sends a message to the image server
+     * @param to
+     * @param cmd
+     * @param params
+     * @param data
+     */
+    sendMessageToImageServer = function(to, cmd, params, data) {
+        if (!!ImageServerSocket && !!to && !!cmd) {
+            params = !!params ? params : {};
+            data = !!data ? data : {};
+            ImageServerSocket.send(getJSONMessage(to, cmd, params, data));
+        } else {
+            throw new Error('ImageServer not initialized!');
         }
     },
 
@@ -140,23 +182,6 @@ var mean = require('meanio'),
     },
 
     /**
-     * Sends a message to the image server
-     * @param to
-     * @param cmd
-     * @param params
-     * @param data
-     */
-    sendMessageToImageServer = function(to, cmd, params, data) {
-        if (!!ImageServerSocket) {
-            params = !!params ? params : {};
-            data = !!data ? data : {};
-            ImageServerSocket.send(getMessage(to, cmd, params, data));
-        } else {
-            throw new Error('ImageServer not initialized!');
-        }
-    },
-
-    /**
      * Updates the state of a game and informs all parties of the changes
      * Does not propagate the changes to the database!
      * @param game
@@ -186,6 +211,7 @@ var mean = require('meanio'),
                     game.started = Date.now();
                     CurrentGame = game;
                     sendMessageToImageServer('server','start');
+                    sendMessageToAllRobots('server','start');
                     sendMessageToAllClients({
                         cmd: 'changedStatus',
                         status: GameStatus.started
@@ -234,7 +260,7 @@ exports.getClientListener = function() {
             if (!!params.user && CurrentGame.status === GameStatus.started && !!params.cmd) {
                 if (!!params.started) {
                     ClientRobotAssigment[params.user].send(
-                        getMessage(
+                        getJSONMessage(
                             'server',
                             'move',
                             {started: params.started, user: params.user}
@@ -242,7 +268,7 @@ exports.getClientListener = function() {
                     socket.send(params.user + ' started moving: ' + params.cmd);
                 } else {
                     ClientRobotAssigment[params.user].send(
-                        getMessage(
+                        getJSONMessage(
                             'server',
                             'move',
                             {started: params.started, user: params.user}
@@ -254,7 +280,7 @@ exports.getClientListener = function() {
         shoot: function(socket, params) {
             if (!!params.user && CurrentGame.status === GameStatus.started) {
                 if (!!params.started) {
-                    ImageServerSocket.send(getMessage('server', 'shot', {player: params.user}));
+                    ImageServerSocket.send(getJSONMessage('server', 'shot', {player: params.user}));
                     socket.send(params.user + ' shot!');
                 }
             }
@@ -279,12 +305,7 @@ exports.getImageServerListener = function() {
                 // pass to client and show changes
                 // game finished?
 
-                ClientSockets[params.user].send(getMessage(
-                    'game',
-                    'hit',
-                    params,
-                    params.precision
-                ));
+                ClientSockets[params.user].send(getJSONMessage('game', 'hit', params, params.precision));
 
                 // TODO
                 // update game state (end game) / set highscore etc
@@ -310,9 +331,11 @@ exports.getImageServerListener = function() {
  */
 exports.getRobotListener = function() {
     return {
-        init: function(socket, params, data) {
-            RobotsSockets[data.form] = socket;
-            socket.send('Robot ' + data.form + ' established the websocket connection!');
+        init: function(socket, params) {
+            if(!!params.form){
+                RobotsSockets[params.form] = socket;
+                socket.send('Robot ' + params.form + ' established the websocket connection!');
+            }
         }
     };
 };
