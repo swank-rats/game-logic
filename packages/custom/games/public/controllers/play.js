@@ -114,7 +114,8 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                         cmd === 'shoot' ? 'shoot' : 'move',
                         {
                             user: $scope.global.user.username,
-                            started: false
+                            started: false,
+                            cmd: cmd
                         }
                     );
                 }

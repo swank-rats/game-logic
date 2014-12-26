@@ -5,7 +5,6 @@
  */
 
 // TODO split code into multiple files and refactor
-// TODO add play button
 // TODO check reset of values after game!!!
 // TODO init image server and robots
 
@@ -25,21 +24,21 @@ var mean = require('meanio'),
     CurrentGame = {},
     ClientRobotAssigment = {},
 
-// TODO just for development
+// FIXME just for development
     ImageServerSocket = {
         send: function(msg) {
-            console.log('Image-Server:' + msg);
+            console.log('------- Image-Server:' + msg);
         }
     },
     RobotsSockets = {
         'pentagon': {
             send: function(msg) {
-                console.log('Pentagon-Robot:' + msg);
+                console.log('##### Pentagon-Robot:' + msg);
             }
         },
         'square': {
             send: function(msg) {
-                console.log('Square-Robot:' + msg);
+                console.log('##### Square-Robot:' + msg);
             }
         }
     },
@@ -50,7 +49,7 @@ var mean = require('meanio'),
      * @param game
      */
     mergePlayers = function(players, game) {
-        //FIXME could be reducted to one loop
+        //FIXME could be reducted to one loop when the request is refactored
         players.forEach(function(newPlayer) {
             var duplicate = false;
             game.players.forEach(function(player) {
@@ -137,8 +136,24 @@ var mean = require('meanio'),
                 });
             }
             res.json(game);
-            CurrentGame = game;
         });
+    },
+
+    /**
+     * Sends a message to the image server
+     * @param to
+     * @param cmd
+     * @param params
+     * @param data
+     */
+    sendMessageToImageServer = function(to, cmd, params, data) {
+        if (!!ImageServerSocket) {
+            params = !!params ? params : {};
+            data = !!data ? data : {};
+            ImageServerSocket.send(getMessage(to, cmd, params, data));
+        } else {
+            throw new Error('ImageServer not initialized!');
+        }
     },
 
     /**
@@ -154,7 +169,9 @@ var mean = require('meanio'),
                 return new Error('A game can not be changed when it is already finished!');
             case GameStatus.started: // end game
                 if (status === GameStatus.ended) {
-                    game.status = status;
+                    game.status = GameStatus.ended;
+                    game.ended = Date.now();
+                    sendMessageToImageServer('server','stop');
                     CurrentGame = null;
                     // TODO calculate highscore etc
                     // image server
@@ -166,7 +183,9 @@ var mean = require('meanio'),
             case GameStatus.ready: // start game
                 if (game.players.length === maxPlayers) {
                     game.status = GameStatus.started;
+                    game.started = Date.now();
                     CurrentGame = game;
+                    sendMessageToImageServer('server','start');
                     sendMessageToAllClients({
                         cmd: 'changedStatus',
                         status: GameStatus.started
@@ -174,9 +193,6 @@ var mean = require('meanio'),
                 } else {
                     return new Error('Max number of players reached!');
                 }
-                // TODO
-                // image server
-                // cmd: start (mehr nicht, von dir, zu mir)
                 break;
             case GameStatus.waiting: // update players
                 if (!!players && Util.isArray(players)) {
@@ -215,7 +231,7 @@ exports.getClientListener = function() {
             }
         },
         move: function(socket, params) {
-            if (!!params.user && CurrentGame.status === GameStatus.started && params.cmd) {
+            if (!!params.user && CurrentGame.status === GameStatus.started && !!params.cmd) {
                 if (!!params.started) {
                     ClientRobotAssigment[params.user].send(
                         getMessage(
@@ -300,19 +316,6 @@ exports.getRobotListener = function() {
         }
     };
 };
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-
-///**
-// *
-// * @param req
-// * @param res
-// */
-//exports.play = function(req, res) {
-//    updateGame();
-//    console.log(req);
-//};
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -402,8 +405,8 @@ exports.config = function(req, res) {
  * @param res
  */
 exports.get = function(req, res) {
+    // get game by status
     if (!!req.query && !!req.query.status) {
-
         var params = [];
         req.query.status.forEach(function(status) {
             params.push(JSON.parse(status));
@@ -419,6 +422,8 @@ exports.get = function(req, res) {
                 });
             }
             res.json(games);
+
+            //
             CurrentGame = games[0];
         });
     } else {
