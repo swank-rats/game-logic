@@ -7,11 +7,31 @@ angular.module('mean.games').service('GamesUtil', [function() {
         return {
 
             /**
+             * Starts a given game
+             */
+            startGame: function(game){
+                var url = '/games/'+game._id+'?action=start';
+
+                $http.post(url, {msg:'hello word!'}).
+                    success(function(data, status, headers, config) {
+                        // this callback will be called asynchronously
+                        // when the response is available
+                        console.log(data, status);
+                    }).
+                    error(function(data, status, headers, config) {
+                        // called asynchronously if an error occurs
+                        // or server returns response with an error status.
+                        console.log(data, status);
+                    });
+            },
+
+            /**
              * Find current game
              * @return object with $promise property
              */
             findCurrentGame: function() {
-                return Games.query({status: [{status: 'ready'}, {status: 'waiting'}]}, function(response) {
+                var statuses = [{status: 'ready'}, {status: 'waiting'}, {status: 'started'}];
+                return Games.query({status: statuses}, function(response) {
                     return !!response[0] ? response[0] : null;
                 });
             },

@@ -10,10 +10,10 @@
                     </div>
                     <div id="start" data-ng-if="game.status === 'ready'">
                         <h1 class="text-center">Start the game!</h1>
-                        <input class="btn btn-info btn-lg center-block" value="Start!" type="submit"/>
+                        <input class="btn btn-info btn-lg center-block" value="Start!" type="submit" data-ng-click="start()"/>
                     </div>
                     <div id="stream" data-ng-if="game.status === 'started'" data-ng-keydown="keyDownAction($event)" data-ng-keyup="keyUpAction($event)" tabindex="-1">
-                        <img class="img-responsive hidden" ng-src="{{config.server}}" data-ng-model="server"/>
+                        <img class="img-responsive" data-ng-src="{{config.server}}" data-ng-model="server"/>
                     </div>
                 </div>
             </div>

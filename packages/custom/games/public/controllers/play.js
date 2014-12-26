@@ -24,10 +24,10 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
          /*--------------------------------------------------------------------*/
 
         /**
-         * starts a game
+         * starts the current game
          */
         $scope.start = function() {
-
+            GamesUtil.startGame($scope.game);
         };
 
         /**

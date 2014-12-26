@@ -6,7 +6,8 @@
 
 // TODO split code into multiple files and refactor
 // TODO add play button
-// TODO check reset of values after game
+// TODO check reset of values after game!!!
+// TODO init image server and robots
 
 var mean = require('meanio'),
     config = mean.loadConfig(),
@@ -109,13 +110,45 @@ var mean = require('meanio'),
     },
 
     /**
-     * Updates the state
+     * Creates a new game
+     * @param user
+     * @param form
+     * @param res
+     */
+    createNewGame = function(user, form, res) {
+        var game = new Game({
+            status: GameStatus.waiting,
+            players: [
+                {
+                    user: user,
+                    form: form,
+                    lifePoints: config.swankRats.players.lifePoints
+                }
+            ]
+        });
+
+        ClientSockets = {};
+        ClientRobotAssigment = [];
+
+        game.save(function(err) {
+            if (err) {
+                return res.json(500, {
+                    error: 'Cannot create the game'
+                });
+            }
+            res.json(game);
+            CurrentGame = game;
+        });
+    },
+
+    /**
+     * Updates the state of a game and informs all parties of the changes
+     * Does not propagate the changes to the database!
      * @param game
      * @param players
-     * @param maxPlayers
      */
-    updateGame = function(game, players, maxPlayers) {
-
+    updateGame = function(game, players) {
+        var maxPlayers = config.swankRats.players.max;
         switch (game.status) {
             case GameStatus.ended:
                 return new Error('A game can not be changed when it is already finished!');
@@ -132,10 +165,16 @@ var mean = require('meanio'),
                 break;
             case GameStatus.ready: // start game
                 if (game.players.length === maxPlayers) {
-                    // TODO inform all parties that a game has started
                     game.status = GameStatus.started;
                     CurrentGame = game;
+                    sendMessageToAllClients({
+                        cmd: 'changedStatus',
+                        status: GameStatus.started
+                    });
+                } else {
+                    return new Error('Max number of players reached!');
                 }
+                // TODO
                 // image server
                 // cmd: start (mehr nicht, von dir, zu mir)
                 break;
@@ -146,7 +185,10 @@ var mean = require('meanio'),
                         // update state when max number of players is reached
                         if (game.players.length === maxPlayers) {
                             game.status = GameStatus.ready;
-                            sendMessageToAllClients({cmd: 'changedStatus', status: 'ready'});
+                            sendMessageToAllClients({
+                                cmd: 'changedStatus',
+                                status: GameStatus.ready
+                            });
                         }
                     } else {
                         return new Error('Max number of players reached!');
@@ -262,15 +304,15 @@ exports.getRobotListener = function() {
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 
-/**
- *
- * @param req
- * @param res
- */
-exports.play = function(req, res) {
-    updateGame();
-    console.log(req);
-};
+///**
+// *
+// * @param req
+// * @param res
+// */
+//exports.play = function(req, res) {
+//    updateGame();
+//    console.log(req);
+//};
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -280,13 +322,13 @@ exports.play = function(req, res) {
  * @param req
  * @param res
  */
-exports.update = function(req, res) {
+exports.put = function(req, res) {
     var players = req.body.players || null,
         response;
 
     Game.findOne({'_id': req.params.gameId}, function(err, game) {
         if (!!game) {
-            response = updateGame(game, players, config.swankRats.players.max);
+            response = updateGame(game, players);
             if (!(response instanceof Error)) {
                 game.save(function(err) {
                     if (err) {
@@ -307,35 +349,33 @@ exports.update = function(req, res) {
 /*----------------------------------------------------------------------------*/
 
 /**
- * Creates a game with the waiting status, resets the client sockets as well as
- * the robot-client-assignment and sets the new current game
+ * Creates a game with the waiting status or processes actions
  * @param req
  * @param res
  */
-exports.create = function(req, res) {
-    var game = new Game({
-        status: GameStatus.waiting,
-        players: [
-            {
-                user: req.body.players.user,
-                form: req.body.players.form,
-                lifePoints: config.swankRats.players.lifePoints
+exports.post = function(req, res) {
+    if (!!req.query && !!req.query.action && !!req.game) {
+        if (req.game.status === GameStatus.ready) {
+            var response = updateGame(req.game);
+            if (!(response instanceof Error)) {
+                CurrentGame.save(function(err) {
+                    if (err) {
+                        return res.json(500, {error: 'Game could not be updated!'});
+                    }
+                    res.json(CurrentGame);
+                });
+            } else {
+                return res.json(500, {error: response.message});
             }
-        ]
-    });
-
-    ClientSockets = {};
-    ClientRobotAssigment = [];
-
-    game.save(function(err) {
-        if (err) {
-            return res.json(500, {
-                error: 'Cannot save the game'
-            });
+        } else {
+            return res.json(500,{error: 'Cannot start the game!'});
         }
-        res.json(game);
-        CurrentGame = game;
-    });
+    } else {
+        if (!req.game && !!req.body.players && !!req.body.players.user && req.body.players.form) {
+            return createNewGame(req.body.players.user, req.body.players.form, res);
+        }
+        return res.json(500,{error: 'Cannot create the game!'});
+    }
 };
 
 /*----------------------------------------------------------------------------*/
@@ -361,10 +401,17 @@ exports.config = function(req, res) {
  * @param req
  * @param res
  */
-exports.find = function(req, res) {
+exports.get = function(req, res) {
     if (!!req.query && !!req.query.status) {
-        // filter by status
-        Game.find({$or: req.query.status}).exec(function(err, games) {
+
+        var params = [];
+        req.query.status.forEach(function(status) {
+            params.push(JSON.parse(status));
+        });
+
+        // filter by status which should return only one game
+        // otherwise the business logic failed
+        Game.find({$or: params}).exec(function(err, games) {
             if (err) {
                 return res.json(500, {
                     error: 'Cannot find games with the given status!',
@@ -372,6 +419,7 @@ exports.find = function(req, res) {
                 });
             }
             res.json(games);
+            CurrentGame = games[0];
         });
     } else {
         // list all games
@@ -395,6 +443,7 @@ exports.find = function(req, res) {
 
 /**
  * Find game by id - uses somehow the show function
+ * Used by the routing file to inject game model
  */
 exports.game = function(req, res, next, id) {
     Game.load(id, function(err, game) {
@@ -413,6 +462,9 @@ exports.game = function(req, res, next, id) {
 exports.show = function(req, res) {
     res.json(req.game);
 };
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 /**
  * Delete an game
