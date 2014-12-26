@@ -1,9 +1,9 @@
 'use strict';
 
-angular.module('mean.games').controller('GamesIndexController', ['$scope', '$stateParams', '$location', 'Global', 'Games', '$rootScope', '$http', '$q', 'GamesUtil',
-    function($scope, $stateParams, $location, Global, Games, $rootScope, $http, $q, gamesUtil) {
+angular.module('mean.games').controller('GamesIndexController', ['$scope', '$location', 'Global', 'Games', '$rootScope', '$http', '$q', 'GamesUtil',
+    function($scope, $location, Global, Games, $rootScope, $http, $q, gamesUtil) {
 
-        var Util = gamesUtil($rootScope, Games, $http, $q, $scope);
+        var GamesUtil = gamesUtil($rootScope, Games, $http, $q, $scope);
 
         /*--------------------------------------------------------------------*/
         /* Index page related
@@ -16,9 +16,9 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$sta
 
             // fetch configuration and store it in the global scope
             // afterwards get game
-            Util.fetchConfiguration().then(
+            GamesUtil.fetchConfiguration().then(
                 function() {
-                    Util.findCurrentGame().$promise.then(function(response) {
+                    GamesUtil.findCurrentGame().$promise.then(function(response) {
                         var currentGame = !!response[0] ? response[0] : null,
                             status = '',
                             forms = $rootScope.config.players.forms;
@@ -26,15 +26,15 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$sta
                         // match waiting for another player
                         if (!!currentGame) {
                             // current player already registered for game
-                            if (!!Util.isUserRegisteredForGame(currentGame, $scope.global.user)) {
-                                Util.initWebsocket(
+                            if (!!GamesUtil.isUserRegisteredForGame(currentGame, $scope.global.user)) {
+                                GamesUtil.initWebsocket(
                                     $scope.global.user.username,
-                                    Util.getFormForUserInGame($scope.global.user, currentGame),
+                                    GamesUtil.getFormForUserInGame($scope.global.user, currentGame),
                                     $rootScope.config.socketServer
                                 );
                                 $location.path('games/' + currentGame._id + '/play');
                             } else if (currentGame.players.length < $rootScope.config.players.max) { // current player not registered and enough space
-                                forms = Util.getAvailableForms(currentGame.players, $rootScope.config.players.forms);
+                                forms = GamesUtil.getAvailableForms(currentGame.players, $rootScope.config.players.forms);
                                 status = 'join';
                             } else { // current player not registered and no space
                                 // TODO implement watch only mode?
@@ -47,7 +47,6 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$sta
                         $scope.forms = forms;
                         $scope.currentGame = currentGame;
                         $scope.status = status;
-
                     });
                 }, function(data, status, headers) {
                     console.error({

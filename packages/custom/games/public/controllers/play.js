@@ -1,25 +1,34 @@
 'use strict';
 
-angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stateParams', '$location', 'Global', 'Games', '$rootScope', '$http', '$q', 'GamesUtil',
-    function($scope, $stateParams, $location, Global, Games, $rootScope, $http, $q, gamesUtil) {
+angular.module('mean.games').controller('GamesPlayController', ['$scope', '$location', 'Global', 'Games', '$rootScope', '$http', '$q', 'GamesUtil', 'WebsocketUtil',
+    function($scope, $location, Global, Games, $rootScope, $http, $q, gamesUtil, websocketUtil) {
 
         var pressedKeys = [],
-            Util = gamesUtil($rootScope, Games, $http, $q, $scope),
+            GamesUtil = gamesUtil($rootScope, Games, $http, $q, $scope),
+            WebsocketUtil = websocketUtil($rootScope, $scope),
 
             bindCustomEvents = function() {
 
                 // status of a game changes and different html has to be shown
-                $scope.$on('statusChanged', function(event, data){
-                    console.log('gamestate: '+ $scope.game.status);
-                    $scope.game.status = data.status;
-                    $scope.$apply();
-                    console.log('gamestate: '+ $scope.game.status);
-                }.bind(this));
+                $scope.$on('statusChanged', function(event, data) {
+
+                    // http://jimhoskins.com/2012/12/17/angularjs-and-apply.html
+                    $scope.$apply(function() {
+                        $scope.game.status = data.status;
+                    }.bind(this));
+                });
             };
 
         /*--------------------------------------------------------------------*/
         /* play page related
          /*--------------------------------------------------------------------*/
+
+        /**
+         * starts a game
+         */
+        $scope.start = function() {
+
+        };
 
         /**
          * Checks if user is registered for current ready game
@@ -30,23 +39,24 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
             $scope.config = {
                 server: ''
             };
+
             bindCustomEvents();
 
-            Util.fetchConfiguration().then(
+            GamesUtil.fetchConfiguration().then(
                 function() {
-                    var response = Util.findCurrentGame(),
+                    var response = GamesUtil.findCurrentGame(),
                         user = $scope.global.user,
                         game, form;
 
                     response.$promise.then(function(response) {
                         game = !!response[0] ? response[0] : null;
-                        form = Util.getFormForUserInGame(game, user);
+                        form = GamesUtil.getFormForUserInGame(game, user);
                         $scope.game = game;
 
                         // when there is a game "full" and the user is a player of this game show everything
-                        if (!!game && !!game.players && !!Util.isUserRegisteredForGame(game, user)) {
+                        if (!!game && !!game.players && !!GamesUtil.isUserRegisteredForGame(game, user)) {
                             $scope.config.server = $rootScope.config.streamServer;
-                            Util.initWebsocket(user.username, form, $rootScope.config.socketServer);
+                            WebsocketUtil.initWebsocket(user.username, form, $rootScope.config.socketServer);
                         } else { // when a game has started
                             // TODO implement watch only mode?
                             $location.path('games');
@@ -70,12 +80,12 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
          */
         $scope.keyDownAction = function(event) {
             if (!!$rootScope.websocket && !!event.which) {
-                var cmd = Util.getCommandFromKeyEvent(event.which);
+                var cmd = GamesUtil.getCommandFromKeyEvent(event.which);
 
                 // event triggered the first time
                 if (!!cmd && pressedKeys.indexOf(cmd) === -1) {
                     pressedKeys.push(cmd);
-                    Util.sendMessage(
+                    WebsocketUtil.sendMessage(
                         'game',
                         cmd === 'shoot' ? 'shoot' : 'move',
                         {
@@ -94,12 +104,12 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$stat
          */
         $scope.keyUpAction = function(event) {
             if (!!$rootScope.websocket && !!event.which) {
-                var cmd = Util.getCommandFromKeyEvent(event.which);
+                var cmd = GamesUtil.getCommandFromKeyEvent(event.which);
 
                 // event triggered the first time
                 if (!!cmd && pressedKeys.indexOf(cmd) > -1) {
                     pressedKeys.splice(pressedKeys.indexOf(cmd), 1);
-                    Util.sendMessage(
+                    WebsocketUtil.sendMessage(
                         'game',
                         cmd === 'shoot' ? 'shoot' : 'move',
                         {
