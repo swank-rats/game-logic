@@ -23,6 +23,7 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                     $scope.$apply(function() {
                         if($scope.player.user.username === data.username){
                             $scope.player.lifePoints = data.lifePoints;
+                            $scope.winner.username = data.username;
                         }
                     }.bind(this));
                 });
@@ -54,6 +55,7 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
 
             $scope.player = {};
             $scope.game = {};
+            $scope.winner={};
             $scope.config = {
                 server: '',
                 maxLifePoints: '0'

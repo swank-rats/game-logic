@@ -17,9 +17,13 @@
                     <div id="stream" data-ng-if="game.status === 'started'" data-ng-keydown="keyDownAction($event)" data-ng-keyup="keyUpAction($event)" tabindex="-1">
                         <img class="img-responsive" data-ng-src="{{config.server}}" data-ng-model="server"/>
                     </div>
+                    <div id="finished" data-ng-if="game.status === 'ended'" class="text-center">
+                        <h1 class="center-block">{{winner.username}} won!</h1>
+                        <a class="btn btn-info btn-lg center-block" href="/#!/highscores">Get to the highscores!</a>
+                    </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" data-ng-if="game.status === 'started'">
                 <div class="col-xs-6 col-md-6">
                     <h2>
                         <span class="glyphicon glyphicon-heart"></span>
@@ -34,7 +38,7 @@
         </div>
     </div>
 
-    <div class="container-fluid m-bottom-5">
+    <div class="container-fluid m-bottom-5" data-ng-if="game.status !== 'ended'">
         <div class="row">
             <div class="col-md-12">
                 <h3>Controlls</h3>

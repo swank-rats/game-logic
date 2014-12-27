@@ -7,6 +7,9 @@
 // TODO split code into multiple files and refactor
 // TODO check reset of values after game!!!
 // TODO timeout sockets?
+// TODO loops refactoring - break earlier?
+// TODO refactor update function
+// TODO set current game via req.game
 
 var mean = require('meanio'),
     config = mean.loadConfig(),
@@ -71,7 +74,7 @@ var mean = require('meanio'),
             game.players.forEach(function(player) {
                 if (newPlayer.form === player.form || newPlayer.user._id === player.user._id) {
                     duplicate = true;
-                    return false;
+                    //return false; ? break?
                 }
             }, this);
 
@@ -181,6 +184,26 @@ var mean = require('meanio'),
         });
     },
 
+    /**
+     * Returns winner of a game
+     * @param game
+     * @return {*}
+     */
+    getWinnerOfAGame = function(game){
+        var winner = null;
+        game.players.forEach(function(p) {
+            if (p.lifePoints >= 0) {
+                winner = p;
+                //return false; ? break;
+            }
+        });
+
+        if(!winner){
+            throw new Error('No winner found!');
+        }
+        return winner;
+    },
+
 // TODO refactor method
     /**
      * Updates the state of a game and informs all parties of the changes
@@ -195,34 +218,20 @@ var mean = require('meanio'),
             case GameStatus.ended:
                 return new Error('A game can not be changed when it is already finished!');
             case GameStatus.started: // end game
-                if (game.status === GameStatus.ended) {
-                    //game.status = GameStatus.ended;
+                    game.status = GameStatus.ended;
                     game.ended = Date.now();
                     sendMessageToImageServer('server', 'stop');
                     sendMessageToAllRobots('server', 'stop');
-                    // TODO
-                    //sendMessageToAllClients()
-                    CurrentGame = null;
+                    // TODO set winner of a game
+                    sendMessageToAllClients({
+                        cmd: 'changedStatus',
+                        status: GameStatus.ended,
+                        winner: getWinnerOfAGame(CurrentGame).user.username
+                    });
                     ClientRobotAssigment = [];
+                    ClientSockets = {};
                     // TODO close client sockets?
                     // TODO calculate highscore etc
-
-
-                    // TODO
-// update game state (end game) / set highscore etc
-// tell all parties that the game is over
-//ImageServerSocket.send(getMessage('server', 'stop', {},{}));
-//RobotsSockets.forEach(function(robotSocket, key){
-//    robotSocket.send(getMessage('server', 'stop', {},{}));
-//    ClientSockets[key].send(getMessage('server', 'stop', {},{}));
-//}.bind(this));
-//RobotsSockets = {};
-//ClientSockets = {};
-//ClientRobotAssigment = [];
-
-                } else {
-                    return new Error('A started game can only get in the finished state!');
-                }
                 break;
             case GameStatus.ready: // start game
                 if (game.players.length === maxPlayers) {
@@ -264,17 +273,22 @@ var mean = require('meanio'),
      * @param form
      * @return {*}
      */
-    getPlayerForForm = function(form) {
-        var player = null;
-        CurrentGame.players.forEach(function(p) {
-            if (p.form === form) {
-                player = p;
+    getPlayerIndexForForm = function(form) {
+        var index = -1,
+            i = 0,
+            length = CurrentGame.players.length;
+
+        while (i < length) {
+            if (CurrentGame.players[i].form === form) {
+                index = i;
+                break;
             }
-        });
-        if (!player) {
+            i += 1;
+        }
+        if (index < 0) {
             throw new Error('No player for this form ' + form + ' found!');
         }
-        return player;
+        return index;
     },
 
     /**
@@ -284,33 +298,33 @@ var mean = require('meanio'),
      * @param points
      */
     playerGotHit = function(playerForm, precision, points) {
-        var player = getPlayerForForm(playerForm),
-            hitValue = precision * points;
+        var index = getPlayerIndexForForm(playerForm),
+            hitValue = precision * points,
+            changedPlayer = CurrentGame.players[index];
 
         // end of game
-        if (player.lifePoints <= hitValue) {
-            player.lifePoints = 0;
+        if (CurrentGame.players[index].lifePoints <= hitValue) {
+            changedPlayer.lifePoints = 0;
         } else {
-            player.lifePoints -= hitValue;
+            changedPlayer.lifePoints -= hitValue;
         }
 
-        ClientSockets[player.user.username].send(
+        CurrentGame.players.set(index, changedPlayer);
+        ClientSockets[changedPlayer.user.username].send(
             getJSONMessage(
                 'server',
                 'hit',
                 {
-                    username: player.user.username,
-                    lifePoints: player.lifePoints
+                    username: changedPlayer.user.username,
+                    lifePoints: changedPlayer.lifePoints
                 },
                 {}
             )
         );
-        //TODO
-        // save game?
         // end the game
-        //if (player.lifePoints === 0) {
-        //    updateGame(CurrentGame);
-        //}
+        if (changedPlayer.lifePoints === 0) {
+            updateGame(CurrentGame);
+        }
     };
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -380,6 +394,11 @@ exports.getImageServerListener = function() {
         hit: function(socket, params) {
             if (!!params.player && !!params.precision) {
                 playerGotHit(params.player, params.precision, config.swankRats.hitValue);
+                CurrentGame.save(function(err) {
+                    if (err) {
+                        throw new Error('Game could not be updated after hit!');
+                    }
+                });
             } else {
                 throw new Error('server hit listener: form or precision not set!');
             }
@@ -447,7 +466,12 @@ exports.post = function(req, res) {
         // FIXME: just for development
         if (req.query.action === 'hit' && !!req.body.player) { // hit player
             playerGotHit(req.body.player, 1, config.swankRats.hitValue);
-            return res.json(CurrentGame);
+            CurrentGame.save(function(err) {
+                if (err) {
+                    return res.json(500, {error: 'Game could not be updated!'});
+                }
+                res.json(CurrentGame);
+            }.bind(this));
         } else if (req.game.status === GameStatus.ready) { //game state change
             response = updateGame(req.game);
             if (!(response instanceof Error)) {
@@ -566,7 +590,6 @@ exports.show = function(req, res) {
  */
 exports.destroy = function(req, res) {
     var game = req.game;
-
     game.remove(function(err) {
         if (err) {
             return res.json(500, {
