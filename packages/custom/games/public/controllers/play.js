@@ -17,11 +17,28 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                         $scope.game.status = data.status;
                     }.bind(this));
                 });
+
+                // player was hit
+                $scope.$on('hit', function(event, data) {
+                    $scope.$apply(function() {
+                        if($scope.player.user.username === data.username){
+                            $scope.player.lifePoints = data.lifePoints;
+                        }
+                    }.bind(this));
+                });
             };
 
         /*--------------------------------------------------------------------*/
         /* play page related
          /*--------------------------------------------------------------------*/
+
+        /**
+         * Hits a player
+         * FIXME: Just for development
+         */
+        $scope.hit = function(index){
+            GamesUtil.hitPlayer($scope.game, {player: index});
+        };
 
         /**
          * starts the current game
@@ -35,9 +52,11 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
          */
         $scope.init = function() {
 
+            $scope.player = {};
             $scope.game = {};
             $scope.config = {
-                server: ''
+                server: '',
+                maxLifePoints: '0'
             };
 
             bindCustomEvents();
@@ -46,17 +65,18 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                 function() {
                     var response = GamesUtil.findCurrentGame(),
                         user = $scope.global.user,
-                        game, form;
+                        game;
 
                     response.$promise.then(function(response) {
                         game = !!response[0] ? response[0] : null;
-                        form = GamesUtil.getFormForUserInGame(game, user);
+                        $scope.player = GamesUtil.getPlayerByUser(game, user);
                         $scope.game = game;
 
                         // when there is a game "full" and the user is a player of this game show everything
                         if (!!game && !!game.players && !!GamesUtil.isUserRegisteredForGame(game, user)) {
                             $scope.config.server = $rootScope.config.streamServer;
-                            WebsocketUtil.initWebsocket(user.username, form, $rootScope.config.socketServer);
+                            $scope.config.maxLifePoints = $rootScope.config.players.lifePoints;
+                            WebsocketUtil.initWebsocket(user.username, $scope.player.form, $rootScope.config.socketServer);
                         } else { // when a game has started
                             // TODO implement watch only mode?
                             $location.path('games');

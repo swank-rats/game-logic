@@ -33,6 +33,9 @@ angular.module('mean.games').service('WebsocketUtil', [function() {
                                     case 'changedStatus':
                                         $scope.$emit('statusChanged', data);
                                         break;
+                                    case 'hit':
+                                        $scope.$emit('hit', data.params);
+                                        break;
                                 }
                             }
                         } else {

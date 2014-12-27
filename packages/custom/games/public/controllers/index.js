@@ -22,16 +22,15 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$loc
                     GamesUtil.findCurrentGame().$promise.then(function(response) {
                         var currentGame = !!response[0] ? response[0] : null,
                             status = '',
-                            form = null,
                             forms = $rootScope.config.players.forms;
 
                         if (!!currentGame) {
                             // current player already registered for game
                             if (!!GamesUtil.isUserRegisteredForGame(currentGame, $scope.global.user)) {
-                                form = GamesUtil.getFormForUserInGame(currentGame, $scope.global.user);
+                                $scope.player = GamesUtil.getPlayerByUser(currentGame, $scope.global.user);
                                 WebsocketUtil.initWebsocket(
                                     $scope.global.user.username,
-                                    form,
+                                    $scope.player.form,
                                     $rootScope.config.socketServer
                                 );
                                 $location.path('games/' + currentGame._id + '/play');
@@ -69,6 +68,7 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$loc
          */
         $scope.createOrJoinGame = function(isValid) {
 
+            // TODO refactor
             if (!!isValid && !!this.selectedForm) {
                 var game;
 

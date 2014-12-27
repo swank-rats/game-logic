@@ -7,12 +7,34 @@ angular.module('mean.games').service('GamesUtil', [function() {
         return {
 
             /**
-             * Starts a given game
+             * Sends the request to hit a player
+             * @param game
+             * @param data
+             * FIXME: Just for development
              */
-            startGame: function(game){
-                var url = '/games/'+game._id+'?action=start';
+            hitPlayer: function(game, data) {
+                var url = '/games/' + game._id + '?action=hit';
+                data = !!data ? data : {};
 
-                $http.post(url, {msg:'hello word!'}).
+                $http.post(url, data).
+                    error(function(data, status, headers) {
+                        console.error(
+                            'Error while starting game!',
+                            {data: data, status: status, headers: headers}
+                        );
+                    });
+            },
+
+            /**
+             * Starts a given game
+             * @param game
+             * @param data
+             */
+            startGame: function(game, data){
+                var url = '/games/'+game._id+'?action=start';
+                data = !!data ? data : {};
+
+                $http.post(url, data).
                     error(function(data, status, headers) {
                         console.error(
                             'Error while starting game!',
@@ -115,22 +137,22 @@ angular.module('mean.games').service('GamesUtil', [function() {
             },
 
             /**
-             * Returns the form a player choose for a game
+             * Returns the player associated with the user-account
              * @param game
              * @param user
              * @return {string}
              */
-            getFormForUserInGame: function(game, user) {
-                var form = null;
+            getPlayerByUser: function(game, user) {
+                var currentPlayer = null;
                 if ((!!game && !!game.players && !!user)) {
                     angular.forEach(game.players, function(player) {
                         if (player.user._id === user._id) {
-                            form = player.form;
+                            currentPlayer = player;
                             return false;
                         }
                     }, this);
                 }
-                return form;
+                return currentPlayer;
             }
         };
     };
