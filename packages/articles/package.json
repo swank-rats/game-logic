@@ -7,6 +7,7 @@
   },
   "mean": "0.4.x",
   "engines": {
+    "basic-auth": "*",
     "node": "0.10.x",
     "npm": "1.4.x"
   },
