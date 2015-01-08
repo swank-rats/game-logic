@@ -384,7 +384,6 @@ exports.getImageServerListener = function() {
             ImageServerSocket = socket;
             // FIXME: just for development
             console.log('Imageserver established the websocket connection!');
-            socket.send('Imageserver established the websocket connection!');
         },
         hit: function(socket, params) {
             if (!!params.player && !!params.precision) {
