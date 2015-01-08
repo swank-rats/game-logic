@@ -108,9 +108,7 @@ var mean = require('meanio'),
         if (!!ClientSockets) {
             var message = JSON.stringify(data);
             for (var socket in ClientSockets) {
-                if (ClientSockets.hasOwnProperty(socket)) {
-                    ClientSockets[socket].send(message);
-                }
+                ClientSockets[socket].send(message);
             }
         }
     },
@@ -126,13 +124,9 @@ var mean = require('meanio'),
         if (!!RobotsSockets) {
             params = !!params ? params : {};
             data = !!data ? data : {};
-
             var message = getJSONMessage(to, cmd, params, data);
-
             for (var socket in RobotsSockets) {
-                if (RobotsSockets.hasOwnProperty(socket)) {
-                    RobotsSockets[socket].send(message);
-                }
+                RobotsSockets[socket].send(message);
             }
         }
     },

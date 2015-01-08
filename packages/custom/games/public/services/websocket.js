@@ -43,6 +43,14 @@ angular.module('mean.games').service('WebsocketUtil', [function() {
                             console.log('Server: ' + e.data);
                         }
                     };
+
+                    connection.onerror = function(error){
+                        console.log('Websocket error:',error);
+                    };
+
+                    connection.onclose = function(){
+                        console.log('Websocket closed!');
+                    };
                 }
             },
 

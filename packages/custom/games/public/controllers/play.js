@@ -56,9 +56,11 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
         $scope.end = function(){
             $location.path('/highscores');
             WebsocketUtil.close();
+            $rootScope.websocket = null;
             $scope.player = {};
             $scope.game = {};
             $scope.winner={};
+            console.log('Game ended - reset values!');
         };
 
         /**
