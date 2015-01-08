@@ -10,7 +10,8 @@
 // TODO loops refactoring - break earlier?
 // TODO refactor update function
 // TODO set current game via req.game
-
+// TODO do not set user object directly in player - reference and populate afterwards if needed
+    
 var mean = require('meanio'),
     config = mean.loadConfig(),
     mongoose = require('mongoose'),
@@ -68,17 +69,17 @@ var mean = require('meanio'),
      * @param game
      */
     mergePlayers = function(players, game) {
-        //FIXME could be reducted to one loop when the request is refactored
+        //FIXME could be reduced to one loop when the request is refactored
         players.forEach(function(newPlayer) {
             var duplicate = false;
             game.players.forEach(function(player) {
                 if (newPlayer.form === player.form || newPlayer.user._id === player.user._id) {
                     duplicate = true;
-                    //return false; ? break?
+                    return false;
                 }
             }, this);
 
-            if (!duplicate) {
+            if (!duplicate && !!newPlayer.user && !!newPlayer.user._id) {
                 newPlayer.lifePoints = config.swankRats.players.lifePoints;
                 game.players.push(newPlayer);
             }
@@ -218,19 +219,19 @@ var mean = require('meanio'),
             case GameStatus.ended:
                 return new Error('A game can not be changed when it is already finished!');
             case GameStatus.started: // end game
+                    var winner = getWinnerOfAGame(CurrentGame);
                     game.status = GameStatus.ended;
                     game.ended = Date.now();
+                    game.winner = winner.user._id;
                     sendMessageToImageServer('server', 'stop');
                     sendMessageToAllRobots('server', 'stop');
-                    // TODO set winner of a game
                     sendMessageToAllClients({
                         cmd: 'changedStatus',
                         status: GameStatus.ended,
-                        winner: getWinnerOfAGame(CurrentGame).user.username
+                        winner: winner.user.username
                     });
                     ClientRobotAssigment = [];
                     ClientSockets = {};
-                    // TODO close client sockets?
                     // TODO calculate highscore etc
                 break;
             case GameStatus.ready: // start game
@@ -522,6 +523,7 @@ exports.get = function(req, res) {
     // get game by status
     if (!!req.query && !!req.query.status) {
         var params = [];
+        // parse query params
         req.query.status.forEach(function(status) {
             params.push(JSON.parse(status));
         });
@@ -538,7 +540,7 @@ exports.get = function(req, res) {
             res.json(games);
 
             //FIXME for development?
-            CurrentGame = games[0];
+            CurrentGame = games[0] || null;
         });
     } else {
         // list all games

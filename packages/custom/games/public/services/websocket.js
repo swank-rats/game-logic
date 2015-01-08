@@ -9,7 +9,7 @@ angular.module('mean.games').service('WebsocketUtil', [function() {
             /**
              * Initializes the websocket
              */
-            initWebsocket: function(username, form, wssUrl) {
+            init: function(username, form, wssUrl) {
                 if (!$rootScope.websocket) {
                     var connection = new WebSocket(wssUrl);
                     $rootScope.websocket = connection;
@@ -26,6 +26,7 @@ angular.module('mean.games').service('WebsocketUtil', [function() {
                     };
 
                     connection.onmessage = function(e) {
+                        // TODO try catch?
                         if (e.data.indexOf('{') > -1) {
                             var data = JSON.parse(e.data);
                             if (!!data.cmd) {
@@ -42,6 +43,15 @@ angular.module('mean.games').service('WebsocketUtil', [function() {
                             console.log('Server: ' + e.data);
                         }
                     };
+                }
+            },
+
+            /**
+             * Closes current websocket connection
+             */
+            close: function(){
+                if(!!$rootScope.websocket) {
+                    $rootScope.websocket.close();
                 }
             },
 

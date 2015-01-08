@@ -19,7 +19,7 @@
                     </div>
                     <div id="finished" data-ng-if="game.status === 'ended'" class="text-center">
                         <h1 class="center-block">{{winner.username}} won!</h1>
-                        <a class="btn btn-info btn-lg center-block" href="/#!/highscores">Get to the highscores!</a>
+                        <a class="btn btn-info btn-lg center-block" data-ng-click="end()">Get to the highscores!</a>
                     </div>
                 </div>
             </div>

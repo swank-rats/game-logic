@@ -15,6 +15,9 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                     // http://jimhoskins.com/2012/12/17/angularjs-and-apply.html
                     $scope.$apply(function() {
                         $scope.game.status = data.status;
+                        if(data.status === 'ended'){
+                            $scope.winner.username = data.winner;
+                        }
                     }.bind(this));
                 });
 
@@ -23,7 +26,6 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                     $scope.$apply(function() {
                         if($scope.player.user.username === data.username){
                             $scope.player.lifePoints = data.lifePoints;
-                            $scope.winner.username = data.username;
                         }
                     }.bind(this));
                 });
@@ -46,6 +48,17 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
          */
         $scope.start = function() {
             GamesUtil.startGame($scope.game);
+        };
+
+        /**
+         * Resets values and redirects to highscores
+         */
+        $scope.end = function(){
+            $location.path('/highscores');
+            WebsocketUtil.close();
+            $scope.player = {};
+            $scope.game = {};
+            $scope.winner={};
         };
 
         /**
@@ -78,7 +91,7 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                         if (!!game && !!game.players && !!GamesUtil.isUserRegisteredForGame(game, user)) {
                             $scope.config.server = $rootScope.config.streamServer;
                             $scope.config.maxLifePoints = $rootScope.config.players.lifePoints;
-                            WebsocketUtil.initWebsocket(user.username, $scope.player.form, $rootScope.config.socketServer);
+                            WebsocketUtil.init(user.username, $scope.player.form, $rootScope.config.socketServer);
                         } else { // when a game has started
                             // TODO implement watch only mode?
                             $location.path('games');

@@ -28,7 +28,7 @@ angular.module('mean.games').controller('GamesIndexController', ['$scope', '$loc
                             // current player already registered for game
                             if (!!GamesUtil.isUserRegisteredForGame(currentGame, $scope.global.user)) {
                                 $scope.player = GamesUtil.getPlayerByUser(currentGame, $scope.global.user);
-                                WebsocketUtil.initWebsocket(
+                                WebsocketUtil.init(
                                     $scope.global.user.username,
                                     $scope.player.form,
                                     $rootScope.config.socketServer
