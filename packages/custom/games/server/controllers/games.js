@@ -11,7 +11,7 @@
 // TODO refactor update function
 // TODO set current game via req.game
 // TODO do not set user object directly in player - reference and populate afterwards if needed
-    
+
 var mean = require('meanio'),
     config = mean.loadConfig(),
     mongoose = require('mongoose'),
@@ -193,9 +193,9 @@ var mean = require('meanio'),
     getWinnerOfAGame = function(game){
         var winner = null;
         game.players.forEach(function(p) {
-            if (p.lifePoints >= 0) {
+            if (p.lifePoints > 0) {
                 winner = p;
-                //return false; ? break;
+                return false;
             }
         });
 
