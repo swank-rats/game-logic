@@ -344,8 +344,8 @@ exports.getClientListener = function() {
                 if (!!params.started) {
                     ClientRobotAssigment[params.user].send(
                         getJSONMessage(
-                            'server',
-                            'move',
+                            'robot',
+                            params.cmd,
                             {started: params.started, user: params.user}
                         ));
                     // FIXME: just for development
@@ -353,8 +353,8 @@ exports.getClientListener = function() {
                 } else {
                     ClientRobotAssigment[params.user].send(
                         getJSONMessage(
-                            'server',
-                            'move',
+                            'robot  ',
+                            params.cmd,
                             {started: params.started, user: params.user}
                         ));
                     // FIXME: just for development
@@ -409,6 +409,8 @@ exports.getRobotListener = function() {
     return {
         init: function(socket, params) {
             if (!!params.form) {
+                console.log('##### Robot-Init');
+
                 RobotsSockets[params.form] = socket;
                 socket.send('Robot ' + params.form + ' established the websocket connection!');
             }

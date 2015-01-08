@@ -6,16 +6,17 @@
 var ModuleFactory = require('meanio').Module;
 
 var Websocket = new ModuleFactory('websocket'),
-    WebsocketServer = require('websocket-wrapper'),
-    websocketSever;
+    WebsocketWrapper = require('websocket-wrapper').WebsocketWrapper,
+    wsWrapper;
 /*
  * All MEAN packages require registration
  * Dependency injection is used to define required modules
  */
-Websocket.register(function(app, auth, database, https) {
-    websocketSever = new WebsocketServer({server: https});
+Websocket.register(function(app, auth, database, http) {
+    wsWrapper = new WebsocketWrapper({port: 2000});
 
-    websocketSever.registerListener('test', {echo: function(socket, params, data) {
+    wsWrapper.addListener('test', {
+        echo: function(socket, params, data) {
         if (!!params.toUpper) {
             data = data.toUpperCase();
         }
@@ -26,10 +27,10 @@ Websocket.register(function(app, auth, database, https) {
 });
 
 /**
- * register _listener for websockets library
+ * register listener for websockets library
  * @param {String} name
  * @param {Object} listener
  */
-Websocket.registerListener = function(name, listener) {
-    websocketSever.registerListener(name, listener);
+Websocket.addListener = function(name, listener) {
+    wsWrapper.addListener(name, listener);
 };

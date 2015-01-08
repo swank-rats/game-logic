@@ -17,9 +17,9 @@ Games.register(function(app, auth, database, websocket) {
     //We enable routing. By default the Package Object is passed to the routes
     Games.routes(app, auth, database);
 
-    websocket.registerListener('game', GamesController.getClientListener());
-    websocket.registerListener('server', GamesController.getImageServerListener());
-    websocket.registerListener('robot', GamesController.getRobotListener());
+    websocket.addListener('game', GamesController.getClientListener());
+    websocket.addListener('server', GamesController.getImageServerListener());
+    websocket.addListener('robot', GamesController.getRobotListener());
 
     //We are adding a link to the main menu for all authenticated users
     Games.menus.add({
