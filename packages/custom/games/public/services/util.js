@@ -106,7 +106,7 @@ angular.module('mean.games').service('GamesUtil', [function() {
                         return 'right';
                     // W
                     case 87:
-                        return 'forward';
+                        return 'straight';
                     // L
                     case 76:
                         return 'shoot';

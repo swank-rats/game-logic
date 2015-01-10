@@ -8,7 +8,6 @@ module.exports = {
   http: {
     port: process.env.PORT || 3000
   },
-  /*
   https: {
     port: process.env.HTTPS_PORT || 3001,
 
@@ -18,7 +17,6 @@ module.exports = {
       cert: 'server.crt'
     }
   },
-  */
   hostname: process.env.HOST || process.env.HOSTNAME,
   db: process.env.MONGOHQ_URL,
   templateEngine: 'swig',
@@ -38,7 +36,7 @@ module.exports = {
     // only when SSL-enabled (HTTPS) is used, and otherwise it won't
     // set a cookie. 'true' is recommended yet it requires the above
     // mentioned pre-requisite.
-    secure: false,
+    secure: true,
     // Only set the maxAge to null if the cookie shouldn't be expired
     // at all. The cookie will expunge when the browser is closed.
     maxAge: null
@@ -48,7 +46,7 @@ module.exports = {
   sessionName: 'connect.sid',
 
   swankRats : {
-    socketServer: 'ws://192.168.43.177:2000',
+    socketServer: 'wss://localhost:3001',
     streamServer: '/theme/assets/img/1024x768.gif',
     hitValue: 50,
     players: {
