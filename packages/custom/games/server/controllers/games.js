@@ -23,11 +23,12 @@ var mean = require('meanio'),
         waiting: 'waiting'      // one player created a game and is waiting for the second
     },
 
+    Highscores,
     ClientSockets = {},
     CurrentGame = {},
     ClientRobotAssigment = {},
 
-// stub for failure tolerance
+    // stub for failure tolerance
     ImageServerSocket = {
         send: function(msg) {
             console.log('------- Image-Server:' + msg);
@@ -202,6 +203,13 @@ var mean = require('meanio'),
         return winner;
     },
 
+    createHighscore = function(points, created, ended, id){
+        if(!!Highscores){
+            var score = (ended-created)/1000*points;
+            Highscores.createWithData(score, id);
+        }
+    },
+
 // TODO refactor method
     /**
      * Updates the state of a game and informs all parties of the changes
@@ -229,7 +237,7 @@ var mean = require('meanio'),
                     });
                     ClientRobotAssigment = [];
                     ClientSockets = {};
-                    // TODO calculate highscore etc
+                    createHighscore(winner.lifePoints, game.created, game.ended, winner.user._id);
                 break;
             case GameStatus.ready: // start game
                 if (game.players.length === maxPlayers) {
@@ -324,6 +332,11 @@ var mean = require('meanio'),
         }
     };
 /*----------------------------------------------------------------------------*/
+
+exports.registerHighscores = function(hscore){
+    Highscores = hscore;
+};
+
 /*----------------------------------------------------------------------------*/
 
 /**
@@ -336,6 +349,12 @@ exports.getClientListener = function() {
             if (!!params.user) {
                 ClientSockets[params.user] = socket;
                 setRobotSocketForUser(params.user, params.form);
+
+                // restart image stream service
+                if(!!ImageServerSocket) {
+                    sendMessageToImageServer('server', 'start');
+                    console.log('Reinitialized the image server connection!');
+                }
                 // FIXME: just for development
                 socket.send(params.user + ' initialized the websocket connection!');
                 console.log(params.user + ' initialized the websocket connection!');
@@ -365,7 +384,7 @@ exports.getClientListener = function() {
             }
         },
         shoot: function(socket, params) {
-            if (!!params.form && CurrentGame.status === GameStatus.started) {
+            if (!!params.form && CurrentGame.status === GameStatus.started && !!params.started) {
                 ImageServerSocket.send(getJSONMessage('server', 'shot', {form: params.form}));
                 // FIXME: just for development
                 socket.send('player shot!');

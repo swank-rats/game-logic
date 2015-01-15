@@ -34,7 +34,8 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
             getDataForMessage = function(cmd, form, started) {
                 if (cmd === 'shoot') {
                     return {
-                        form: $scope.player.form
+                        form: $scope.player.form,
+                        started: started
                     };
                 } else {
                     return {
