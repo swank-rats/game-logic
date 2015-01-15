@@ -27,10 +27,11 @@ var mean = require('meanio'),
     ClientSockets = {},
     CurrentGame = {},
     ClientRobotAssigment = {},
-
+    
 // FIXME: just for development
     ImageServerSocket = null,
     ImageServerSocketStarted = false,
+
     RobotsSockets = {
         'pentagon': {
             send: function(msg) {
@@ -453,7 +454,17 @@ exports.getRobotListener = function() {
         init: function(socket, params) {
             if (!!params.form) {
                 console.log('##### Robot-Init ' + params.form);
-                RobotsSockets[params.form] = socket;
+                RobotsSockets[params.form] = {
+                    socket: socket,
+                    params: params,
+                    send: function(msg) {
+                        try {
+                            this.socket.send(msg);
+                        } catch (e) {
+                            console.log('##### Robot-Error ' + this.params.form + ': ' + e.message);
+                        }
+                    }
+                };
             }
         }
     };
