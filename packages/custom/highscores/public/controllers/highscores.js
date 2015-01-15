@@ -14,5 +14,7 @@ angular.module('mean.highscores').controller('HighscoresController', ['$scope', 
                 $scope.highscores = Highscores;
             });
         };
+
+
     }
 ]);
