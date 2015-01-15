@@ -28,11 +28,7 @@ var mean = require('meanio'),
     ClientRobotAssigment = {},
 
 // FIXME: just for development
-    ImageServerSocket = {
-        send: function(msg) {
-            console.log('------- Image-Server:' + msg);
-        }
-    },
+    ImageServerSocket = null,
     RobotsSockets = {
         'pentagon': {
             send: function(msg) {
@@ -336,6 +332,12 @@ exports.getClientListener = function() {
             if (!!params.user) {
                 ClientSockets[params.user] = socket;
                 setRobotSocketForUser(params.user, params.form);
+
+                // restart image stream service
+                if(!!ImageServerSocket) {
+                    sendMessageToImageServer('server', 'start');
+                    console.log('Reinitialized the image server connection!');
+                }
                 // FIXME: just for development
                 socket.send(params.user + ' initialized the websocket connection!');
                 console.log(params.user + ' initialized the websocket connection!');
@@ -365,7 +367,7 @@ exports.getClientListener = function() {
             }
         },
         shoot: function(socket, params) {
-            if (!!params.form && CurrentGame.status === GameStatus.started) {
+            if (!!params.form && CurrentGame.status === GameStatus.started && !!params.started) {
                 ImageServerSocket.send(getJSONMessage('server', 'shot', {form: params.form}));
                 // FIXME: just for development
                 socket.send('player shot!');
