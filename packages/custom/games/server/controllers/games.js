@@ -58,8 +58,8 @@ var mean = require('meanio'),
         return JSON.stringify({
             to: to,
             cmd: cmd,
-            params: params,
-            data: data
+            params: params || {},
+            data: data || {}
         });
     },
 
@@ -312,8 +312,7 @@ var mean = require('meanio'),
                 {
                     username: changedPlayer.user.username,
                     lifePoints: changedPlayer.lifePoints
-                },
-                {}
+                }
             )
         );
         // end the game
@@ -353,7 +352,7 @@ exports.getClientListener = function() {
                 } else {
                     ClientRobotAssigment[params.user].send(
                         getJSONMessage(
-                            'robot  ',
+                            'robot',
                             params.cmd,
                             {started: params.started, user: params.user}
                         ));
@@ -363,12 +362,11 @@ exports.getClientListener = function() {
             }
         },
         shoot: function(socket, params) {
-            if (!!params.user && CurrentGame.status === GameStatus.started) {
-                if (!!params.started) {
-                    ImageServerSocket.send(getJSONMessage('server', 'shot', {player: params.user}));
-                    // FIXME: just for development
-                    socket.send(params.user + ' shot!');
-                }
+            if (!!params.form && CurrentGame.status === GameStatus.started) {
+                ImageServerSocket.send(getJSONMessage('server', 'shot', {form: params.form}));
+                // FIXME: just for development
+                socket.send('player shot!');
+
             }
         }
     };
@@ -386,8 +384,8 @@ exports.getImageServerListener = function() {
             console.log('Imageserver established the websocket connection!');
         },
         hit: function(socket, params) {
-            if (!!params.player && !!params.precision) {
-                playerGotHit(params.player, params.precision, config.swankRats.hitValue);
+            if (!!params.form && !!params.precision) {
+                playerGotHit(params.form, params.precision, config.swankRats.hitValue);
                 CurrentGame.save(function(err) {
                     if (err) {
                         throw new Error('Game could not be updated after hit!');
@@ -590,7 +588,7 @@ exports.destroy = function(req, res) {
     game.remove(function(err) {
         if (err) {
             return res.json(500, {
-                error: 'Cannot delete the game'
+                error: 'Cannot delete the game!'
             });
         }
         res.json(game);

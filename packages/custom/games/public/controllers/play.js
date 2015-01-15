@@ -29,6 +29,20 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                         }
                     }.bind(this));
                 });
+            },
+
+            getDataForMessage = function(cmd, form, started) {
+                if (cmd === 'shoot') {
+                    return {
+                        form: $scope.player.form
+                    };
+                } else {
+                    return {
+                        user: $scope.global.user.username,
+                        started: started,
+                        cmd: cmd
+                    };
+                }
             };
 
         /*--------------------------------------------------------------------*/
@@ -125,11 +139,7 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                     WebsocketUtil.sendMessage(
                         'game',
                         cmd === 'shoot' ? 'shoot' : 'move',
-                        {
-                            user: $scope.global.user.username,
-                            started: true,
-                            cmd: cmd
-                        }
+                        getDataForMessage(cmd, $scope.player.form, true)
                     );
                 }
             }
@@ -149,11 +159,7 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                     WebsocketUtil.sendMessage(
                         'game',
                         cmd === 'shoot' ? 'shoot' : 'move',
-                        {
-                            user: $scope.global.user.username,
-                            started: false,
-                            cmd: cmd
-                        }
+                        getDataForMessage(cmd, $scope.player.form, false)
                     );
                 }
             }
