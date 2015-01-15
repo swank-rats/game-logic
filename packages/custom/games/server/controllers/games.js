@@ -7,7 +7,6 @@
 // TODO split code into multiple files and refactor
 // TODO check reset of values after game!!!
 // TODO timeout sockets?
-// TODO loops refactoring - break earlier?
 // TODO refactor update function
 // TODO set current game via req.game
 // TODO do not set user object directly in player - reference and populate afterwards if needed
@@ -94,10 +93,14 @@ var mean = require('meanio'),
      */
     setRobotSocketForUser = function(user, form) {
         if (!!RobotsSockets[form]) {
-            ClientRobotAssigment[user] = RobotsSockets[form];
+            ClientRobotAssigment[user] = form;
         } else {
             throw new Error('Robot with form ' + form + ' not found!');
         }
+    },
+
+    getRobotSocketForUser = function(user){
+        return RobotsSockets[ClientRobotAssigment[user]];
     },
 
     /**
@@ -341,7 +344,7 @@ exports.getClientListener = function() {
         move: function(socket, params) {
             if (!!params.user && CurrentGame.status === GameStatus.started && !!params.cmd) {
                 if (!!params.started) {
-                    ClientRobotAssigment[params.user].send(
+                    getRobotSocketForUser(params.user).send(
                         getJSONMessage(
                             'robot',
                             params.cmd,
@@ -350,7 +353,7 @@ exports.getClientListener = function() {
                     // FIXME: just for development
                     socket.send(params.user + ' started moving: ' + params.cmd);
                 } else {
-                    ClientRobotAssigment[params.user].send(
+                    getRobotSocketForUser(params.user).send(
                         getJSONMessage(
                             'robot',
                             params.cmd,
@@ -406,10 +409,8 @@ exports.getRobotListener = function() {
     return {
         init: function(socket, params) {
             if (!!params.form) {
-                console.log('##### Robot-Init');
-
+                console.log('##### Robot-Init ' + params.form);
                 RobotsSockets[params.form] = socket;
-                socket.send('Robot ' + params.form + ' established the websocket connection!');
             }
         }
     };
