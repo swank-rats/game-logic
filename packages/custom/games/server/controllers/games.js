@@ -331,7 +331,7 @@ var mean = require('meanio'),
 
 exports.registerHighscores = function(hscore){
     Highscores = hscore;
-}
+};
 
 /*----------------------------------------------------------------------------*/
 
