@@ -27,7 +27,7 @@ var mean = require('meanio'),
     CurrentGame = {},
     ClientRobotAssigment = {},
 
-// FIXME: just for development
+// stub for failure tolerance
     ImageServerSocket = {
         send: function(msg) {
             console.log('------- Image-Server:' + msg);
@@ -410,7 +410,17 @@ exports.getRobotListener = function() {
         init: function(socket, params) {
             if (!!params.form) {
                 console.log('##### Robot-Init ' + params.form);
-                RobotsSockets[params.form] = socket;
+                RobotsSockets[params.form] = {
+                    socket: socket,
+                    params: params,
+                    send: function(msg) {
+                        try {
+                            this.socket.send(msg);
+                        } catch (e) {
+                            console.log('##### Robot-Error ' + this.params.form + ': ' + e.message);
+                        }
+                    }
+                };
             }
         }
     };
