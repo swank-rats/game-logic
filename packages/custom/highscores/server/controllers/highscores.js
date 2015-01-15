@@ -61,15 +61,11 @@ exports.createWithData = function(score, userId){
         created: new Date()
     });
 
-    //var promise = new Promise();
     highscore.save(function(err) {
         if (err) {
-            //promise.reject(new Error('Cannot save the highscore!'));
-            throw new Error('Cannot save the highscore!');
+            throw new Error('Cannot save the manually added highscore!');
         }
-        //promise.resolve(highscore);
     });
-    //return promise;
 };
 
 /**

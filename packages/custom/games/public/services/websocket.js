@@ -45,8 +45,10 @@ angular.module('mean.games').service('WebsocketUtil', [function() {
                     };
 
                     connection.onerror = function(error){
-                        console.log('Websocket error:',error);
-                    };
+                        console.error('Websocket error:',error);
+                        console.log('Trying to restart websocket...');
+                        this.init(username, form, wssUrl);
+                    }.bind(this);
 
                     connection.onclose = function(){
                         console.log('Websocket closed!');

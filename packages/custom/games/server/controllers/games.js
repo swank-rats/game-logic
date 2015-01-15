@@ -30,6 +30,7 @@ var mean = require('meanio'),
 
 // FIXME: just for development
     ImageServerSocket = null,
+    ImageServerSocketStarted = false,
     RobotsSockets = {
         'pentagon': {
             send: function(msg) {
@@ -96,7 +97,7 @@ var mean = require('meanio'),
         }
     },
 
-    getRobotSocketForUser = function(user){
+    getRobotSocketForUser = function(user) {
         return RobotsSockets[ClientRobotAssigment[user]];
     },
 
@@ -140,9 +141,24 @@ var mean = require('meanio'),
      */
     sendMessageToImageServer = function(to, cmd, params, data) {
         if (!!ImageServerSocket && !!to && !!cmd) {
+            var msg = '';
             params = !!params ? params : {};
             data = !!data ? data : {};
-            ImageServerSocket.send(getJSONMessage(to, cmd, params, data));
+
+            if (!!params && !!data) {
+                msg = getJSONMessage(to, cmd, params, data);
+            }
+            else if (!!params) {
+                msg = getJSONMessage(to, cmd, params);
+            }
+            else if (!!data) {
+                msg = getJSONMessage(to, cmd, data);
+            }
+            else {
+                msg = getJSONMessage(to, cmd);
+            }
+            ImageServerSocket.send(msg);
+            console.log('#### ImageServer: ' + msg);
         } else {
             throw new Error('ImageServer not initialized!');
         }
@@ -184,7 +200,7 @@ var mean = require('meanio'),
      * @param game
      * @return {*}
      */
-    getWinnerOfAGame = function(game){
+    getWinnerOfAGame = function(game) {
         var winner = null;
         game.players.forEach(function(p) {
             if (p.lifePoints > 0) {
@@ -193,15 +209,15 @@ var mean = require('meanio'),
             }
         });
 
-        if(!winner){
+        if (!winner) {
             throw new Error('No winner found!');
         }
         return winner;
     },
 
-    createHighscore = function(points, created, ended, id){
-        if(!!Highscores){
-            var score = (ended-created)/1000*points;
+    createHighscore = function(points, created, ended, id) {
+        if (!!Highscores) {
+            var score = (ended - created) / 1000 * points;
             Highscores.createWithData(score, id);
         }
     },
@@ -220,20 +236,21 @@ var mean = require('meanio'),
             case GameStatus.ended:
                 return new Error('A game can not be changed when it is already finished!');
             case GameStatus.started: // end game
-                    var winner = getWinnerOfAGame(CurrentGame);
-                    game.status = GameStatus.ended;
-                    game.ended = Date.now();
-                    game.winner = winner.user._id;
-                    sendMessageToImageServer('server', 'stop');
-                    sendMessageToAllRobots('server', 'stop');
-                    sendMessageToAllClients({
-                        cmd: 'changedStatus',
-                        status: GameStatus.ended,
-                        winner: winner.user.username
-                    });
-                    ClientRobotAssigment = [];
-                    ClientSockets = {};
-                    createHighscore(winner.lifePoints, game.created, game.ended, winner.user._id);
+                var winner = getWinnerOfAGame(CurrentGame);
+                game.status = GameStatus.ended;
+                game.ended = Date.now();
+                game.winner = winner.user._id;
+                sendMessageToImageServer('server', 'stop');
+                ImageServerSocketStarted = false;
+                sendMessageToAllRobots('server', 'stop');
+                sendMessageToAllClients({
+                    cmd: 'changedStatus',
+                    status: GameStatus.ended,
+                    winner: winner.user.username
+                });
+                ClientRobotAssigment = [];
+                ClientSockets = {};
+                createHighscore(winner.lifePoints, game.created, game.ended, winner.user._id);
                 break;
             case GameStatus.ready: // start game
                 if (game.players.length === maxPlayers) {
@@ -241,6 +258,7 @@ var mean = require('meanio'),
                     game.started = Date.now();
                     CurrentGame = game;
                     sendMessageToImageServer('server', 'start');
+                    ImageServerSocketStarted = true;
                     sendMessageToAllRobots('server', 'start');
                     sendMessageToAllClients({
                         cmd: 'changedStatus',
@@ -329,7 +347,7 @@ var mean = require('meanio'),
     };
 /*----------------------------------------------------------------------------*/
 
-exports.registerHighscores = function(hscore){
+exports.registerHighscores = function(hscore) {
     Highscores = hscore;
 };
 
@@ -346,8 +364,9 @@ exports.getClientListener = function() {
                 ClientSockets[params.user] = socket;
                 setRobotSocketForUser(params.user, params.form);
 
-                // restart image stream service
-                if(!!ImageServerSocket) {
+                // restart image stream service when socket is initialized and we want to
+                // ensure that the stream has started
+                if (!!ImageServerSocket && ImageServerSocket.readyState === 1 && !!ImageServerSocketStarted) {
                     sendMessageToImageServer('server', 'start');
                     console.log('Reinitialized the image server connection!');
                 }
@@ -398,6 +417,15 @@ exports.getImageServerListener = function() {
     return {
         init: function(socket) {
             ImageServerSocket = socket;
+
+            socket.on('close', function() {
+               ImageServerSocketStarted = false;
+            }.bind(this));
+
+            socket.on('error', function() {
+                ImageServerSocketStarted = false;
+            }.bind(this));
+
             // FIXME: just for development
             console.log('Imageserver established the websocket connection!');
         },
