@@ -21,3 +21,13 @@ wscat --connect wss://localhost:3001 -p 8 -n
 > {"to":"test","cmd":"echo","params":{"toUpper": true},"data":"testdata"}
   < TESTDATA
 ```
+
+## Start app
+To start the app either type
+```bash
+grunt
+```
+in your CLI or start it with forever to keep it up an running
+```bash
+forever server.js
+```
