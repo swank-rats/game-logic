@@ -1,3 +1,8 @@
-div {
-    outline: none;
+div, input {
+    outline: none !important;
+}
+
+.center-75 {
+    width: 75%;
+    margin: auto;
 }

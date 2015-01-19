@@ -6,19 +6,15 @@ module.exports = function(Games, app, auth) {
 
     // routes
     app.route('/games')
-        .get(auth.requiresLogin, games.find)
-        .post(auth.requiresLogin, games.create);
+        .get(auth.requiresLogin, games.get)
+        .post(auth.requiresLogin, games.post);
 
     app.route('/games/:gameId')
-        .get(auth.requiresLogin, games.show)
-        .put(auth.requiresLogin, games.update);
+        .put(auth.requiresLogin, games.put)
+        .post(auth.requiresLogin, games.post);
 
     app.param('gameId', games.game);
 
     app.route('/games-config')
         .get(auth.requiresLogin, games.config);
-
-    app.route('/games/:gameId/play')
-        .get(auth.requiresLogin, games.play);
-
 };

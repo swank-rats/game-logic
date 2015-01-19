@@ -1,51 +1,88 @@
-<section data-ng-controller="GamesController" data-ng-init="initGamesView()">
+<section data-ng-controller="GamesPlayController" data-ng-init="init()">
     <div class="container m-bottom-35">
 
         <div class="container-fluid m-bottom-25">
             <div class="row">
-                <div class="col-md-12" data-ng-keypress="keyDownAction($event)"  data-ng-keyup="keyUpAction($event)" tabindex="-1">
-                    <img class="img-responsive" src="{{server}}"/>
-                </div>
-            </div>
-        </div>
-
-        <div class="container-fluid m-bottom-5">
-            <div class="row">
                 <div class="col-md-12">
-                    <h3>Controlls</h3>
-                    <table class="table table-striped table-responsive">
-                        <thead>
-                            <tr>
-                                <td><strong>Command</strong></td>
-                                <td><strong>Action</strong></td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Left Arrow Key</td>
-                                <td>Turn your robot to the left side.</td>
-                            </tr>
-                            <tr>
-                                <td>Right Arrow Key</td>
-                                <td>Turn your robot to the right side.</td>
-                            </tr>
-                            <tr>
-                                <td>Arrow Key Up</td>
-                                <td>Accelerate your robot.</td>
-                            </tr>
-                            <tr>
-                                <td>Arrow Key Down</td>
-                                <td>Slow your robot down.</td>
-                            </tr>
-                            <tr>
-                                <td>Spacebar</td>
-                                <td>Fire a cheese bullet.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div id="waiting" class="" data-ng-if="game.status === 'waiting'">
+                        <h1 class="text-center">Waiting...</h1>
+
+                        <p class="text-center">for another player to join the
+                            game!</p>
+                    </div>
+                    <div id="start" data-ng-if="game.status === 'ready'">
+                        <h1 class="text-center">Start the game!</h1>
+                        <input class="btn btn-info btn-lg center-block" value="Start!" type="submit" data-ng-click="start()"/>
+                    </div>
+                    <div id="stream" data-ng-if="game.status === 'started'" data-ng-keydown="keyDownAction($event)" data-ng-keyup="keyUpAction($event)" tabindex="-1">
+                        <img class="img-responsive center-75" data-ng-src="{{config.server}}" data-ng-model="server" style=""/>
+                    </div>
+                    <div id="finished" data-ng-if="game.status === 'ended'" class="text-center">
+                        <h1 class="center-block">{{winner.username}} won!</h1>
+                        <a class="btn btn-info btn-lg center-block" data-ng-click="end()">Get to the highscores!</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row" data-ng-if="game.status === 'started'">
+                <div class="center-75">
+                    <div class="col-xs-6 col-md-6">
+                        <h2>
+                            <span class="glyphicon glyphicon-heart"></span>
+                            {{player.lifePoints}}/{{config.maxLifePoints}}
+                        </h2>
+                    </div>
+                    <div class="col-xs-6 col-md-6 m-top-20">
+                        <div class="col-xs-6">
+                            <input class="btn btn-info btn-lg center-block" value="Hit Square" type="submit" data-ng-click="hit('square')"/>
+                        </div>
+                        <div class="col-xs-6">
+                            <input class="btn btn-info btn-lg center-block" value="Hit Pentagon" type="submit" data-ng-click="hit('pentagon')"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="container-fluid m-bottom-5" data-ng-if="game.status !== 'ended'">
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Controlls</h3>
+                <table class="table table-striped table-responsive">
+                    <thead>
+                        <tr>
+                            <td><strong>Command</strong></td>
+                            <td><strong>Action</strong></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A</td>
+                            <td>Turn your robot to the left side.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>D</td>
+                            <td>Turn your robot to the right side.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>W</td>
+                            <td>Accelerate your robot.</td>
+                        </tr>
+                        <tr>
+                            <td>S</td>
+                            <td>Slow your robot down.</td>
+                        </tr>
+                        <tr>
+                            <td>L</td>
+                            <td>Fire a cheese bullet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     </div>
 </section>

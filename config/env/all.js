@@ -8,6 +8,7 @@ module.exports = {
   http: {
     port: process.env.PORT || 3000
   },
+
   https: {
     port: process.env.HTTPS_PORT || 3001,
 
@@ -17,6 +18,7 @@ module.exports = {
       cert: 'server.crt'
     }
   },
+
   hostname: process.env.HOST || process.env.HOSTNAME,
   db: process.env.MONGOHQ_URL,
   templateEngine: 'swig',
@@ -46,15 +48,15 @@ module.exports = {
   sessionName: 'connect.sid',
 
   swankRats : {
-    streamServer: 'http://www.terravista-erlebnisreisen.de/tl_files/bilder/ozeanien/landingpage/lake-wanaka-in-neuseeland.jpg',
+    socketServer: 'wss://192.168.1.50:3001',
+    streamServer: 'http://192.168.1.100:4711/videostream',
+    hitValue: 50,
     players: {
+        lifePoints: 100,
         max: 2,
-        colors: {
-            red: 'red',
-            blue: 'blue',
-            green: 'green',
-            orange: 'orange',
-            yellow: 'yellow'
+        forms: {
+            pentagon: 'pentagon',
+            square: 'square'
         }
     }
   }

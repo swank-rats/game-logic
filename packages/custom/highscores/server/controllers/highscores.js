@@ -5,6 +5,7 @@
  */
 var mongoose = require('mongoose'),
     Highscore = mongoose.model('Highscore');
+    //Promise = require('./promise');
 
 /**
  * Find highscore by id - uses somehow / magically the show function
@@ -43,6 +44,27 @@ exports.create = function(req, res) {
             });
         }
         res.json(highscore);
+    });
+};
+
+/**
+ * Creats a highscore object and returns a promise
+ * @param score
+ * @param userId
+ * @return {Promise}
+ */
+exports.createWithData = function(score, userId){
+    var highscore = new Highscore({
+        score: score,
+        user: userId,
+        changed: new Date(),
+        created: new Date()
+    });
+
+    highscore.save(function(err) {
+        if (err) {
+            throw new Error('Cannot save the manually added highscore!');
+        }
     });
 };
 

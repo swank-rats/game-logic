@@ -5,8 +5,8 @@
  */
 var Module = require('meanio').Module;
 
-var Highscores = new Module('highscores');
-
+var Highscores = new Module('highscores'),
+    HighscoresController = require('./server/controllers/highscores');
 /*
  * All MEAN packages require registration
  * Dependency injection is used to define required modules
@@ -23,6 +23,10 @@ Highscores.register(function(app, auth, database) {
     roles: ['authenticated'],
     menu: 'main'
   });
+
+  Highscores.createWithData = function(score, id) {
+    HighscoresController.createWithData(score, id);
+  };
   
   Highscores.aggregateAsset('css', 'highscores.css');
 

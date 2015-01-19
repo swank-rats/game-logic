@@ -1,14 +1,9 @@
 <section data-ng-controller="HighscoresController" data-ng-init="find()">
     <div class="container m-bottom-35">
 
-
         <div class="container-fluid m-bottom-5">
             <div class="row">
                 <h1 class="m-bottom-25">Highscores</h1>
-                <blockquote>
-                    <p>If winning isn't everything, why do they keep score?</p>
-                    <footer>Vince Lombardi</footer>
-                </blockquote>
             </div>
         </div>
 
@@ -27,8 +22,7 @@
                             <tr data-ng-repeat="highscore in highscores">
                                 <td>{{highscore.user.username}}</td>
                                 <td>{{highscore.score}}</td>
-                                <td>{{highscore.changed | date:'dd.mm.yyyy'}}
-                                </td>
+                                <td>{{highscore.changed | date:'dd.M.yyyy'}}</td>
                             </tr>
                         </tbody>
                     </table>
