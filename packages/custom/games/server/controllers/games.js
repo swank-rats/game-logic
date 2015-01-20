@@ -27,7 +27,7 @@ var mean = require('meanio'),
     ClientSockets = {},
     CurrentGame = {},
     ClientRobotAssigment = {},
-    
+
 // FIXME: just for development
     ImageServerSocket = null,
     ImageServerSocketStarted = false,
@@ -143,9 +143,6 @@ var mean = require('meanio'),
     sendMessageToImageServer = function(to, cmd, params, data) {
         if (!!ImageServerSocket && !!to && !!cmd) {
             var msg = '';
-            params = !!params ? params : {};
-            data = !!data ? data : {};
-
             if (!!params && !!data) {
                 msg = getJSONMessage(to, cmd, params, data);
             }
