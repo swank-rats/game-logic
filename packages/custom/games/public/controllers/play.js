@@ -29,6 +29,17 @@ angular.module('mean.games').controller('GamesPlayController', ['$scope', '$loca
                         }
                     }.bind(this));
                 });
+
+                // connection to stream lost
+                $scope.$on('connectionLost', function() {
+                    // TODO check if this works
+                    var stream = angular.element.find('#start'),
+                        $img = angular.element('<img class="img-responsive center-75" data-ng-src="'+$scope.config.server+'" data-ng-model="server" style=""/>');
+                    if(!!stream && stream.length > 0){
+                        stream[0].empty();
+                        stream[0].append($img);
+                    }
+                });
             },
 
             getDataForMessage = function(cmd, form, started) {

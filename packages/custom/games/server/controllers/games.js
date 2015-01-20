@@ -310,6 +310,21 @@ var mean = require('meanio'),
     },
 
     /**
+     * Returns a socket of a client for an ip
+     * @param ip
+     * @return {*}
+     */
+    getClientSocketByIp = function(ip){
+        var result = null;
+        for (var socket in ClientSockets) {
+            if(socket._socket.remoteAddress === ip){
+                result = socket;
+            }
+        }
+        return result;
+    },
+
+    /**
      * Processes the hit of a player
      * @param playerForm
      * @param precision
@@ -437,6 +452,13 @@ exports.getImageServerListener = function() {
                 });
             } else {
                 throw new Error('server hit listener: form or precision not set!');
+            }
+        },
+        connectionLost: function(socket, params){
+            if (!!params.ip) {
+                var csocket = getClientSocketByIp(params.ip);
+                if (!!socket)
+                    csocket.send(getJSONMessage({cmd: 'connectionLost'}));
             }
         }
     };
