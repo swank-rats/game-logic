@@ -455,7 +455,7 @@ exports.getImageServerListener = function() {
             }
         },
         connectionLost: function(socket, params){
-            if (!!params.ip) {
+            if (!!params.ip && CurrentGame.status === GameStatus.ready) {
                 var csocket = getClientSocketByIp(params.ip);
                 if (!!socket)
                     csocket.send(getJSONMessage({cmd: 'connectionLost'}));
