@@ -32,8 +32,14 @@ exports.signin = function(req, res) {
  * Logout
  */
 exports.signout = function(req, res) {
-  req.logout();
-  res.redirect('/');
+  req.user.accessToken = '';
+  req.user.save(function(err) {
+    req.logout();
+    if(err) {
+      res.status(400);
+    }
+    res.redirect('/');
+  });
 };
 
 /**
@@ -50,6 +56,7 @@ exports.create = function(req, res, next) {
   var user = new User(req.body);
 
   user.provider = 'local';
+  user.accessToken = exports.generateAccessToken();
 
   // because we set our user.provider to local our models/user.js validation will always be true
   req.assert('name', 'You must enter a name').notEmpty();
@@ -229,4 +236,8 @@ exports.forgotpassword = function(req, res, next) {
       res.json(response);
     }
   );
+};
+
+exports.generateAccessToken = function(){
+    return Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
 };

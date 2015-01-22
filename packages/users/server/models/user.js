@@ -64,6 +64,7 @@ var UserSchema = new Schema({
     type: String,
     default: 'local'
   },
+  accessToken: String,
   salt: String,
   resetPasswordToken: String,
   resetPasswordExpires: Date,

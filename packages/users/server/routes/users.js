@@ -35,10 +35,16 @@ module.exports = function(MeanUser, app, auth, database, passport) {
     .post(passport.authenticate('local', {
       failureFlash: true
     }), function(req, res) {
-      res.send({
-        user: req.user,
-        redirect: (req.user.roles.indexOf('admin') !== -1) ? req.get('referer') : false
-      });
+        req.user.accessToken = users.generateAccessToken();
+        req.user.save(function(err) {
+          if(err) {
+            res.status(400);
+          }
+          res.send({
+            user: req.user,
+            redirect: (req.user.roles.indexOf('admin') !== -1) ? req.get('referer') : false
+          });
+        });
     });
 
   // AngularJS route to get config of social buttons
