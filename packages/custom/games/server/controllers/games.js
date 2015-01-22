@@ -27,7 +27,7 @@ var mean = require('meanio'),
     ClientSockets = {},
     CurrentGame = {},
     ClientRobotAssigment = {},
-    
+
 // FIXME: just for development
     ImageServerSocket = null,
     ImageServerSocketStarted = false,
@@ -99,7 +99,17 @@ var mean = require('meanio'),
     },
 
     getRobotSocketForUser = function(user) {
-        return RobotsSockets[ClientRobotAssigment[user]];
+        return {
+            socket: getClient(ClientRobotAssigment[user]),
+            user: user,
+            send: function(msg) {
+                try {
+                    this.socket.send(msg);
+                } catch (e) {
+                    console.log('##### Robot-Error ' + this.user + ': ' + e.message);
+                }
+            }
+        };
     },
 
     /**
@@ -131,6 +141,15 @@ var mean = require('meanio'),
                 RobotsSockets[socket].send(message);
             }
         }
+    },
+
+    /**
+     * Get client for username
+     * @param username
+     * @returns {object}
+     */
+    getClient = function(username) {
+        return null;
     },
 
     /**
@@ -420,7 +439,7 @@ exports.getImageServerListener = function() {
             ImageServerSocket = socket;
 
             socket.on('close', function() {
-               ImageServerSocketStarted = false;
+                ImageServerSocketStarted = false;
             }.bind(this));
 
             socket.on('error', function() {
@@ -649,4 +668,12 @@ exports.destroy = function(req, res) {
         res.json(game);
 
     });
+};
+
+/**
+ * setter for get client function
+ * @param func
+ */
+exports.setGetClient = function(func) {
+    getClient = func;
 };

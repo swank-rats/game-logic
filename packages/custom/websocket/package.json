@@ -12,7 +12,8 @@
         "npm": "1.4.x"
     },
     "dependencies": {
-        "websocket-wrapper": "git+ssh://git@github.com:swank-rats/websocket-wrapper.git#master"
+        "websocket-wrapper": "git+ssh://git@github.com:swank-rats/websocket-wrapper.git#master",
+        "basic-auth": "*"
     },
     "license": "MIT"
 }

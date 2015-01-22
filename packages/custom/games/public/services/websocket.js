@@ -11,6 +11,8 @@ angular.module('mean.games').service('WebsocketUtil', [function() {
              */
             init: function(username, form, wssUrl) {
                 if (!$rootScope.websocket) {
+                    console.log(1);
+
                     var connection = new WebSocket(wssUrl);
                     $rootScope.websocket = connection;
 

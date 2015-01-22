@@ -84,6 +84,9 @@ UserSchema.virtual('password').set(function(password) {
 }).get(function() {
   return this._password;
 });
+UserSchema.virtual('token').get(function() {
+  return this.hashPassword(this.get('username'));
+});
 
 /**
  * Pre-save hook

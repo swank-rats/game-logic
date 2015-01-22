@@ -16,6 +16,8 @@ Games.register(function(app, auth, database, websocket, highscores) {
     //We enable routing. By default the Package Object is passed to the routes
     Games.routes(app, auth, database);
 
+    GamesController.setGetClient(websocket.getClient);
+
     websocket.addListener('game', GamesController.getClientListener());
     websocket.addListener('server', GamesController.getImageServerListener());
     websocket.addListener('robot', GamesController.getRobotListener());

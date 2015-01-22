@@ -4,6 +4,7 @@ var path = require('path'),
   rootPath = path.normalize(__dirname + '/../..');
 
 module.exports = {
+  debug: true,
   root: rootPath,
   http: {
     port: process.env.PORT || 3000
