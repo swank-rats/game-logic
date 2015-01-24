@@ -49,13 +49,14 @@ module.exports = {
 
   swankRats : {
     socketServer: 'wss://192.168.1.50:3001',
-    streamServer: 'http://192.168.1.100:4711/videostream',
+    //streamServer: 'http://192.168.1.60:4711/videostream',
+    streamServer: '/theme/assets/img/1024x768.gif',
     hitValue: 50,
     players: {
         lifePoints: 100,
         max: 2,
         forms: {
-            pentagon: 'pentagon',
+            circle: 'cirlce',
             square: 'square'
         }
     }
