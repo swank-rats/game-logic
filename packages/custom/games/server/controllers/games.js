@@ -348,16 +348,18 @@ var mean = require('meanio'),
         }
 
         CurrentGame.players.set(index, changedPlayer);
-        ClientSockets[changedPlayer.user.username].send(
-            getJSONMessage(
-                'server',
-                'hit',
-                {
-                    username: changedPlayer.user.username,
-                    lifePoints: changedPlayer.lifePoints
-                }
-            )
-        );
+        if(ClientSockets[changedPlayer.user.username]) {
+            ClientSockets[changedPlayer.user.username].send(
+                getJSONMessage(
+                    'server',
+                    'hit',
+                    {
+                        username: changedPlayer.user.username,
+                        lifePoints: changedPlayer.lifePoints
+                    }
+                )
+            );
+        }
         // end the game
         if (changedPlayer.lifePoints === 0) {
             updateGame(CurrentGame);
