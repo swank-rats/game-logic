@@ -174,6 +174,10 @@ var mean = require('meanio'),
      * @param res
      */
     createNewGame = function(user, form, res) {
+        if(!user || !user.username) {
+            throw new Error('Cannot create game without user!');
+        }
+
         var game = new Game({
             status: GameStatus.waiting,
             players: [
@@ -220,8 +224,19 @@ var mean = require('meanio'),
 
     createHighscore = function(points, created, ended, id) {
         if (!!Highscores) {
-            var score = (ended - created) / 1000 * points;
-            Highscores.createWithData(score, id);
+            var timeBonus = ((ended - created) / 1000);
+            var score = 1;
+
+            if(timeBonus < 60){
+                score = 170;
+            } else if(timeBonus < 120){
+                score = 130;
+            } else if(timeBonus < 240){
+                score = 90;
+            }
+
+            score *=  points;
+            Highscores.createWithData(parseInt(score, 10), id);
         }
     },
 
@@ -386,9 +401,15 @@ exports.getClientListener = function() {
 
                 // restart image stream service when socket is initialized and we want to
                 // ensure that the stream has started
-                if (!!ImageServerSocket && ImageServerSocket.readyState === 1 && !ImageServerSocketStarted) {
+                if (!!ImageServerSocket &&
+                    ImageServerSocket.readyState === 1 &&
+                    !ImageServerSocketStarted &&
+                    !!CurrentGame &&
+                    CurrentGame.status === GameStatus.started
+                ) {
                     sendMessageToImageServer('server', 'start');
                     console.log('Reinitialized the image server connection!');
+                    ImageServerSocketStarted = true;
                 }
                 // FIXME: just for development
                 socket.send(params.user + ' initialized the websocket connection!');
@@ -461,7 +482,7 @@ exports.getImageServerListener = function() {
                 throw new Error('server hit listener: form or precision not set!');
             }
         },
-        connectionLost: function(socket, params){
+        connectionlost: function(socket, params){
             if (!!params.ip && CurrentGame.status === GameStatus.ready) {
                 var csocket = getClientSocketByIp(params.ip);
                 if (!!socket)
@@ -563,8 +584,8 @@ exports.post = function(req, res) {
             return res.json(500, {error: 'Cannot start the game!'});
         }
     } else {
-        if (!req.game && !!req.body.players && !!req.body.players.user && req.body.players.form) {
-            return createNewGame(req.body.players.user, req.body.players.form, res);
+        if (!req.game && !!req.body.players && !!req.user && !!req.user.username && req.body.players.form) {
+            return createNewGame(req.user, req.body.players.form, res);
         }
         return res.json(500, {error: 'Cannot create the game!'});
     }
