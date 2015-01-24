@@ -31,7 +31,7 @@ var mean = require('meanio'),
 // FIXME: just for development
     ImageServerSocket = {
         send: function(msg){
-            console.log(msg);
+            console.log('##### Image-Server:' + msg);
         }
     },
 
@@ -384,7 +384,7 @@ exports.getClientListener = function() {
 
                 // restart image stream service when socket is initialized and we want to
                 // ensure that the stream has started
-                if (!!ImageServerSocket && ImageServerSocket.readyState === 1 && !!ImageServerSocketStarted) {
+                if (!!ImageServerSocket && ImageServerSocket.readyState === 1 && !ImageServerSocketStarted) {
                     sendMessageToImageServer('server', 'start');
                     console.log('Reinitialized the image server connection!');
                 }
