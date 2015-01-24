@@ -4,6 +4,7 @@ var path = require('path'),
   rootPath = path.normalize(__dirname + '/../..');
 
 module.exports = {
+  debug: true,
   root: rootPath,
   http: {
     port: process.env.PORT || 3000
@@ -49,14 +50,15 @@ module.exports = {
 
   swankRats : {
     socketServer: 'wss://192.168.1.50:3001',
-    //streamServer: 'http://192.168.1.60:4711/videostream',
-    streamServer: '/theme/assets/img/1024x768.gif',
-    hitValue: 50,
+    //socketServer: 'wss://192.168.43.177:3001',
+    streamServer: 'http://192.168.1.60:4711/videostream',
+    //streamServer: '/theme/assets/img/1024x768.gif',
+    hitValue: 25,
     players: {
         lifePoints: 100,
         max: 2,
         forms: {
-            circle: 'cirlce',
+            circle: 'circle',
             square: 'square'
         }
     }
