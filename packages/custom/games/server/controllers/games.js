@@ -29,13 +29,18 @@ var mean = require('meanio'),
     ClientRobotAssigment = {},
 
 // FIXME: just for development
-    ImageServerSocket = null,
+    ImageServerSocket = {
+        send: function(msg){
+            console.log(msg);
+        }
+    },
+
     ImageServerSocketStarted = false,
 
     RobotsSockets = {
-        'pentagon': {
+        'circle': {
             send: function(msg) {
-                console.log('##### Pentagon-Robot:' + msg);
+                console.log('##### Circle-Robot:' + msg);
             }
         },
         'square': {
