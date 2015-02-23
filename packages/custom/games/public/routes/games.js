@@ -44,5 +44,13 @@ angular.module('mean.games').config(['$stateProvider',
                 loggedin: checkLoggedin
             }
         });
+
+        $stateProvider.state('games-clear', {
+            url: '/clear',
+            templateUrl: 'games/views/clear.html',
+            resolve: {
+                loggedin: checkLoggedin
+            }
+        });
     }
 ]);

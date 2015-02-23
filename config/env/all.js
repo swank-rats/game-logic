@@ -50,7 +50,7 @@ module.exports = {
 
   swankRats : {
     //socketServer: 'wss://192.168.1.50:3001',
-    socketServer: 'wss://192.168.43.177:3001',
+    socketServer: 'wss://192.168.43.163:3001',
     streamServer: 'http://192.168.43.145:4711/videostream',
     //streamServer: '/theme/assets/img/1024x768.gif',
     hitValue: 25,

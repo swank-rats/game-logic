@@ -17,4 +17,7 @@ module.exports = function(Games, app, auth) {
 
     app.route('/games-config')
         .get(auth.requiresLogin, games.config);
+
+    app.route('/clear')
+        .get(auth.requiresLogin, games.clear);
 };
