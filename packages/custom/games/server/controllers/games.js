@@ -23,6 +23,8 @@ var mean = require('meanio'),
         waiting: 'waiting'      // one player created a game and is waiting for the second
     },
 
+    _ = require('underscore'),
+
     Highscores,
     ClientSockets = {},
     CurrentGame = {},
@@ -439,15 +441,17 @@ exports.getClientListener = function() {
                 }
             }
         },
-        shoot: function(socket, params) {
-            if (!!params.form && CurrentGame.status === GameStatus.started && !!params.started) {
-                ImageServerSocket.send(getJSONMessage('server', 'shot', {form: params.form}));
-                // FIXME: just for development
-                socket.send('player shot!');
-
-            }
-        }
+        shoot: _.throttle(sendShot.bind(this), 1000)
     };
+};
+
+var sendShot = function(socket, params) {
+    if (!!params.form && CurrentGame.status === GameStatus.started && !!params.started) {
+        ImageServerSocket.send(getJSONMessage('server', 'shot', {form: params.form}));
+        // FIXME: just for development
+        socket.send('player shot!');
+
+    }
 };
 
 /**

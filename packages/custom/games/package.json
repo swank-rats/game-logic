@@ -11,6 +11,7 @@
         "npm": "1.4.x"
     },
     "dependencies": {
+        "underscore": "*"
     },
     "license": "MIT"
 }
