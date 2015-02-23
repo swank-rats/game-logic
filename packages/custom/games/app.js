@@ -29,6 +29,13 @@ Games.register(function(app, auth, database, websocket, highscores) {
         menu: 'main'
     });
 
+    Games.menus.add({
+        title: 'Clear',
+        link: 'games-clear',
+        roles: ['authenticated'],
+        menu: 'main'
+    });
+
     Games.aggregateAsset('css', 'games.css');
 
     return Games;

@@ -702,3 +702,19 @@ exports.destroy = function(req, res) {
 
     });
 };
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+
+exports.clear = function(req, res){
+    Game.remove({},function(err){
+        if(!!err){
+            console.log('could not remove games!');
+            return res.json(500, {
+                error: 'could not remove games!'
+            });
+        }
+        console.log('remove games!');
+        return res.json(200, {message: 'collection dropped!'});
+    });
+};
