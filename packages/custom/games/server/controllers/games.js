@@ -475,11 +475,12 @@ exports.getImageServerListener = function() {
                 playerGotHit(params.form, params.precision, config.swankRats.hitValue);
                 CurrentGame.save(function(err) {
                     if (err) {
-                        throw new Error('Game could not be updated after hit!');
+                        console.log('Game could not be updated after hit!');
+                        console.log(err);
                     }
                 });
             } else {
-                throw new Error('server hit listener: form or precision not set!');
+                console.log('server hit listener: form or precision not set!');
             }
         },
         connectionlost: function(socket, params){
