@@ -421,6 +421,7 @@ exports.getClientListener = function() {
         move: function(socket, params) {
             if (!!params.user && CurrentGame.status === GameStatus.started && !!params.cmd) {
                 if (!!params.started) {
+                    if(getRobotSocketForUser(params.user) === null){console.log('no socket found (robot)');return false;}
                     getRobotSocketForUser(params.user).send(
                         getJSONMessage(
                             'robot',
@@ -441,7 +442,7 @@ exports.getClientListener = function() {
                 }
             }
         },
-        shoot: _.throttle(sendShot.bind(this), 1000)
+        shoot: sendShot.bind(this)
     };
 };
 
